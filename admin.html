@@ -1,0 +1,2651 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .header h1 {
+        color: #2d3748;
+        margin-bottom: 8px;
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .header p {
+        color: #718096;
+        font-size: 16px;
+        margin-bottom: 0;
+      }
+
+      #userInfo {
+        margin-top: 12px;
+        font-size: 14px;
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #4f8cff;
+        margin-bottom: 5px;
+      }
+
+      .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .tabs {
+        display: flex;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 5px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab {
+        flex: 1;
+        padding: 15px 20px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .tab.active {
+        background: #4f8cff;
+        color: white;
+      }
+
+      .tab:hover:not(.active) {
+        background: rgba(79, 140, 255, 0.1);
+      }
+
+      .tab-content {
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .table-action-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .table-action-buttons .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        margin: 0;
+        min-width: 80px;
+        white-space: nowrap;
+        border-radius: 6px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        background: #4f8cff;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #3b7de9;
+        transform: translateY(-2px);
+      }
+
+      .btn-success {
+        background: #48bb78;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #38a169;
+        transform: translateY(-2px);
+      }
+
+      .btn-warning {
+        background: #ed8936;
+        color: white;
+      }
+
+      .btn-warning:hover {
+        background: #dd6b20;
+        transform: translateY(-2px);
+      }
+
+      .btn-danger {
+        background: #e53e3e;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c53030;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #718096;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #4a5568;
+        transform: translateY(-2px);
+      }
+
+      .btn-info {
+        background: #4299e1;
+        color: white;
+      }
+
+      .btn-info:hover {
+        background: #3182ce;
+        transform: translateY(-2px);
+      }
+
+      .table-container {
+        overflow-x: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        min-width: 800px;
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+      }
+
+      th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #4a5568;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tr:hover {
+        background: #f7fafc;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .status-active {
+        background: #48bb78;
+        color: white;
+      }
+
+      .status-pending {
+        background: #718096;
+        color: white;
+      }
+
+      .status-suspended {
+        background: #ed8936;
+        color: white;
+      }
+
+      .status-banned {
+        background: #e53e3e;
+        color: white;
+      }
+
+      .superadmin-badge {
+        background: #e53e3e;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+
+      .admin-badge {
+        background: #4f8cff;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #aaa;
+      }
+
+      .close:hover {
+        color: #000;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #4a5568;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #4f8cff;
+      }
+
+      .credentials-display {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+
+      .credentials-display h4 {
+        margin-bottom: 10px;
+        color: #4a5568;
+      }
+
+      .credentials-display p {
+        margin: 5px 0;
+        font-family: monospace;
+        background: white;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #718096;
+      }
+
+      .error {
+        background: #fed7d7;
+        color: #742a2a;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .success {
+        background: #c6f6d5;
+        color: #22543d;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .pagination button {
+        padding: 8px 16px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        cursor: pointer;
+        border-radius: 6px;
+      }
+
+      .pagination button.active {
+        background: #4f8cff;
+        color: white;
+        border-color: #4f8cff;
+      }
+
+      .pagination button:hover:not(.active) {
+        background: #f7fafc;
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tabs {
+          flex-direction: column;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+
+        .table-action-buttons {
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .table-action-buttons .btn {
+          min-width: 70px;
+          font-size: 10px;
+          padding: 4px 8px;
+        }
+
+        .header-buttons {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .header-buttons .btn {
+          font-size: 12px;
+          padding: 6px 12px;
+        }
+      }
+
+      .strength-strong {
+        color: #48bb78;
+      }
+
+      .hidden-ip {
+        color: #999;
+        font-style: italic;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-left: auto;
+      }
+
+      .header-buttons .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .header-buttons .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+      }
+
+      .btn-info {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .btn-info:hover {
+        background: #138496;
+      }
+
+      .user-filters,
+      .admin-filters,
+      .log-filters {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin-bottom: 20px;
+      }
+
+      .user-filters input,
+      .admin-filters input,
+      .log-filters input,
+      .user-filters select,
+      .admin-filters select,
+      .log-filters select {
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 14px;
+        transition:
+          border-color 0.15s ease-in-out,
+          box-shadow 0.15s ease-in-out;
+      }
+
+      .user-filters input:focus,
+      .admin-filters input:focus,
+      .log-filters input:focus,
+      .user-filters select:focus,
+      .admin-filters select:focus,
+      .log-filters select:focus {
+        border-color: #667eea;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      }
+
+      .hidden-ip {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-failure {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .status-banned {
+        background: #dc3545;
+        color: white;
+      }
+
+      .superadmin-badge,
+      .admin-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-left: 5px;
+      }
+
+      .superadmin-badge {
+        background: #dc3545;
+        color: white;
+      }
+
+      .admin-badge {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .recent-activity-section {
+        margin-top: 20px;
+      }
+
+      .recent-activity-section h3 {
+        color: #2d3748;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+      }
+
+      .activity-card {
+        padding: 12px;
+        margin-bottom: 8px;
+        border-left: 4px solid #38a169;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+      }
+
+      .activity-card:hover {
+        transform: translateX(5px);
+      }
+
+      .activity-card.error {
+        border-left-color: #e53e3e;
+      }
+
+      .activity-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+
+      .activity-icon {
+        font-size: 18px;
+      }
+
+      .activity-user {
+        color: #2d3748;
+        font-weight: bold;
+      }
+
+      .activity-email {
+        color: #718096;
+        font-size: 12px;
+      }
+
+      .activity-status {
+        font-size: 12px;
+      }
+
+      .activity-status.success {
+        color: #38a169;
+      }
+
+      .activity-status.error {
+        color: #e53e3e;
+      }
+
+      .activity-details {
+        color: #4a5568;
+        font-size: 13px;
+        margin-left: 28px;
+      }
+
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .status-active {
+        background: #48bb78;
+        color: white;
+      }
+
+      .status-suspended {
+        background: #ed8936;
+        color: white;
+      }
+
+      .status-banned {
+        background: #e53e3e;
+        color: white;
+      }
+
+      .status-pending {
+        background: #718096;
+        color: white;
+      }
+
+      .admin-badge {
+        background: #4f8cff;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      .superadmin-badge {
+        background: #e53e3e;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #718096;
+        font-size: 16px;
+      }
+
+      .error {
+        text-align: center;
+        padding: 20px;
+        color: #e53e3e;
+        background: #fed7d7;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+
+      .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .table-container th,
+      .table-container td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .table-container th {
+        background: #f7fafc;
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .table-container tr:hover {
+        background: #f7fafc;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .pagination button {
+        padding: 8px 16px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .pagination button:hover:not(:disabled) {
+        background: #f7fafc;
+      }
+
+      .pagination button.active {
+        background: #4f8cff;
+        color: white;
+        border-color: #4f8cff;
+      }
+
+      .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <h1>🔐 Admin Dashboard</h1>
+            <p>Manage users, monitor activity, and control system access</p>
+            <div
+              id="userInfo"
+              style="margin-top: 10px; font-size: 14px; color: #718096"
+            ></div>
+          </div>
+          <div class="header-buttons">
+            <button
+              onclick="showApiDocs()"
+              class="btn btn-info"
+              id="apiDocsBtn"
+              style="display: none"
+            >
+              📚 API Docs
+            </button>
+            <button onclick="showChangePasswordModal()" class="btn btn-warning">
+              🔐 Change Password
+            </button>
+            <button
+              onclick="window.location.href='/settings'"
+              class="btn btn-primary"
+            >
+              ⚙️ Settings
+            </button>
+            <button onclick="logout()" class="btn btn-danger">🚪 Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">-</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="activeUsers">-</div>
+          <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="pendingUsers">-</div>
+          <div class="stat-label">Pending Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="bannedUsers">-</div>
+          <div class="stat-label">Banned Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalAdmins">-</div>
+          <div class="stat-label">Total Admins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="recentRegistrations">-</div>
+          <div class="stat-label">Recent Registrations</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('dashboard')">
+          📊 Dashboard
+        </div>
+        <div class="tab" onclick="showTab('users')">👥 Users</div>
+        <div
+          class="tab"
+          id="adminsTab"
+          onclick="showTab('admins')"
+          style="display: none"
+        >
+          👑 Admins
+        </div>
+        <div class="tab" onclick="showTab('logs')">📝 Activity Logs</div>
+      </div>
+
+      <!-- Dashboard Tab -->
+      <div id="dashboard" class="tab-content active">
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="showCreateUserModal()">
+            ➕ Create User
+          </button>
+          <button
+            class="btn btn-success"
+            id="createAdminBtn"
+            onclick="showCreateAdminModal()"
+            style="display: none"
+          >
+            👑 Create Admin
+          </button>
+          <button class="btn btn-warning" onclick="showForgotPasswordModal()">
+            🔑 Reset Password
+          </button>
+        </div>
+
+        <div id="dashboardContent">
+          <div class="loading">Loading dashboard data...</div>
+        </div>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="users" class="tab-content">
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="showCreateUserModal()">
+            ➕ Create User
+          </button>
+          <button
+            class="btn btn-success"
+            id="createAdminBtn2"
+            onclick="showCreateAdminModal()"
+            style="display: none"
+          >
+            👑 Create Admin
+          </button>
+          <button class="btn btn-secondary" onclick="loadUsers()">
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div id="usersContent">
+          <div
+            class="user-filters"
+            style="
+              display: flex;
+              gap: 1rem;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <input
+              id="userSearchInput"
+              type="text"
+              placeholder="Search by name, email, status..."
+              style="
+                flex: 1;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <select
+              id="userStatusFilter"
+              style="padding: 8px; border-radius: 6px"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+              <option value="banned">Banned</option>
+            </select>
+            <select
+              id="userVerifiedFilter"
+              style="padding: 8px; border-radius: 6px"
+            >
+              <option value="">All Users</option>
+              <option value="verified">Verified Only</option>
+              <option value="unverified">Unverified Only</option>
+            </select>
+          </div>
+          <div class="loading">Loading users...</div>
+        </div>
+      </div>
+
+      <!-- Admins Tab -->
+      <div id="admins" class="tab-content">
+        <div class="action-buttons">
+          <button
+            class="btn btn-success"
+            id="createAdminBtn3"
+            onclick="showCreateAdminModal()"
+            style="display: none"
+          >
+            👑 Create Admin
+          </button>
+          <button class="btn btn-secondary" onclick="loadAdmins()">
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div id="adminsContent">
+          <div
+            class="admin-filters"
+            style="
+              display: flex;
+              gap: 1rem;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <input
+              id="adminSearchInput"
+              type="text"
+              placeholder="Search by name, email, role..."
+              style="
+                flex: 1;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              "
+            />
+            <select
+              id="adminRoleFilter"
+              style="padding: 8px; border-radius: 6px"
+            >
+              <option value="">All Roles</option>
+              <option value="Admin">Admin</option>
+              <option value="Superadmin">Superadmin</option>
+            </select>
+            <select
+              id="adminStatusFilter"
+              style="padding: 8px; border-radius: 6px"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+              <option value="banned">Banned</option>
+            </select>
+          </div>
+          <div class="loading">Loading admins...</div>
+        </div>
+      </div>
+
+      <!-- Logs Tab -->
+      <div id="logs" class="tab-content">
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="loadActivityLogs()">
+            🔄 Refresh Logs
+          </button>
+          <button class="btn btn-danger" onclick="deleteAllLogs()">
+            🗑️ Delete All Logs
+          </button>
+        </div>
+        <div
+          class="log-filters"
+          style="
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <input
+            id="logSearchInput"
+            type="text"
+            placeholder="Search user, action, note..."
+            style="
+              flex: 1;
+              padding: 8px;
+              border-radius: 6px;
+              border: 1px solid #ccc;
+            "
+          />
+          <select id="logActionFilter" style="padding: 8px; border-radius: 6px">
+            <option value="">All Actions</option>
+            <option value="LOGIN">Login</option>
+            <option value="LOGOUT">Logout</option>
+            <option value="REGISTER">Register</option>
+            <option value="CHANGE_PASSWORD">Change Password</option>
+            <option value="BAN_USER">Ban User</option>
+            <option value="UNBAN_USER">Unban User</option>
+            <option value="RESET_PASSWORD">Reset Password</option>
+            <option value="UPDATE_GEMINI_KEY">Update Gemini Key</option>
+            <option value="VALIDATE_GEMINI_KEY">Validate Gemini Key</option>
+            <option value="REMOVE_GEMINI_KEY">Remove Gemini Key</option>
+            <option value="CREATE_USER">Create User</option>
+            <option value="CREATE_ADMIN">Create Admin</option>
+            <option value="DELETE_USER">Delete User</option>
+            <option value="DELETE_LOG">Delete Log</option>
+            <option value="DELETE_ALL_LOGS">Delete All Logs</option>
+          </select>
+          <select id="logStatusFilter" style="padding: 8px; border-radius: 6px">
+            <option value="">All Status</option>
+            <option value="success">Success</option>
+            <option value="failure">Failure</option>
+          </select>
+          <input
+            id="logDateFilter"
+            type="date"
+            style="padding: 8px; border-radius: 6px"
+          />
+        </div>
+        <div id="logsContent">
+          <div class="loading">Loading activity logs...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New User</h2>
+          <span class="close" onclick="closeModal('createUserModal')"
+            >&times;</span
+          >
+        </div>
+        <form id="createUserForm">
+          <div class="form-group">
+            <label for="userName">Name</label>
+            <input type="text" id="userName" required />
+          </div>
+          <div class="form-group">
+            <label for="userEmail">Email</label>
+            <input type="email" id="userEmail" required />
+          </div>
+          <div class="form-group">
+            <label for="userPassword"
+              >Password (leave empty for auto-generation)</label
+            >
+            <input
+              type="password"
+              id="userPassword"
+              placeholder="Optional: Enter custom password"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create Admin Modal -->
+    <div id="createAdminModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Admin</h2>
+          <span class="close" onclick="closeModal('createAdminModal')"
+            >&times;</span
+          >
+        </div>
+        <form id="createAdminForm">
+          <div class="form-group">
+            <label for="adminName">Name</label>
+            <input type="text" id="adminName" required />
+          </div>
+          <div class="form-group">
+            <label for="adminEmail">Email</label>
+            <input type="email" id="adminEmail" required />
+          </div>
+          <div class="form-group">
+            <label for="adminPassword"
+              >Password (leave empty for auto-generation)</label
+            >
+            <input
+              type="password"
+              id="adminPassword"
+              placeholder="Optional: Enter custom password"
+            />
+          </div>
+          <button type="submit" class="btn btn-success">Create Admin</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Reset User Password</h2>
+          <span class="close" onclick="closeModal('forgotPasswordModal')"
+            >&times;</span
+          >
+        </div>
+        <form id="forgotPasswordForm">
+          <div class="form-group">
+            <label for="resetUserEmail">User Email</label>
+            <input type="email" id="resetUserEmail" required />
+          </div>
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" required />
+          </div>
+          <button type="submit" class="btn btn-warning">Reset Password</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Ban User Modal -->
+    <div id="banUserModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Ban User</h2>
+          <span class="close" onclick="closeModal('banUserModal')"
+            >&times;</span
+          >
+        </div>
+        <form id="banUserForm">
+          <div class="form-group">
+            <label for="banReason">Ban Reason</label>
+            <textarea
+              id="banReason"
+              rows="3"
+              placeholder="Enter reason for banning this user..."
+            ></textarea>
+          </div>
+          <button type="submit" class="btn btn-danger">Ban User</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Change Admin Password</h2>
+          <span class="close" onclick="closeModal('changePasswordModal')"
+            >&times;</span
+          >
+        </div>
+        <form id="changePasswordForm">
+          <div class="form-group">
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword" required />
+          </div>
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="adminNewPassword" required />
+          </div>
+          <div class="form-group">
+            <label for="confirmNewPassword">Confirm New Password</label>
+            <input type="password" id="confirmNewPassword" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Change Password</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- API Documentation Modal -->
+    <div id="apiDocsModal" class="modal">
+      <div
+        class="modal-content"
+        style="max-width: 800px; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="modal-header">
+          <h2>📚 API Documentation</h2>
+          <span class="close" onclick="closeModal('apiDocsModal')"
+            >&times;</span
+          >
+        </div>
+        <div id="apiDocsContent">
+          <div class="loading">Loading API documentation...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Authentication and utility functions
+      function getAuthHeaders() {
+        const token = localStorage.getItem("authToken");
+        return {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+      }
+
+      function showApiDocs() {
+        document.getElementById("apiDocsModal").style.display = "block";
+
+        // Fetch API documentation
+        fetch("/api/api-docs", {
+          headers: getAuthHeaders(),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              displayApiDocs(data.data);
+            } else {
+              document.getElementById("apiDocsContent").innerHTML =
+                '<div class="error">Failed to load API documentation</div>';
+            }
+          })
+          .catch((error) => {
+            console.error("Error loading API docs:", error);
+            document.getElementById("apiDocsContent").innerHTML =
+              '<div class="error">Error loading API documentation</div>';
+          });
+      }
+
+      function displayApiDocs(docs) {
+        const content = document.getElementById("apiDocsContent");
+
+        let html = `
+          <div style="margin-bottom: 20px;">
+            <h3>${docs.title} v${docs.version}</h3>
+            <p><strong>Base URL:</strong> ${docs.baseUrl}</p>
+            <p>${docs.description}</p>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h4>🔐 Authentication</h4>
+            <p><strong>Type:</strong> ${docs.authentication.type}</p>
+            <p><strong>Header:</strong> <code>${docs.authentication.header}</code></p>
+            <p>${docs.authentication.note}</p>
+          </div>
+        `;
+
+        // Public Endpoints
+        html += `<h4>🌐 Public Endpoints</h4>`;
+        Object.entries(docs.endpoints.public).forEach(([endpoint, details]) => {
+          html += `
+            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h5 style="color: #4f8cff; margin-bottom: 8px;">${endpoint}</h5>
+              <p><strong>Description:</strong> ${details.description}</p>
+              ${details.body ? `<p><strong>Body:</strong> ${JSON.stringify(details.body, null, 2)}</p>` : ""}
+              <p><strong>Response:</strong> ${JSON.stringify(details.response, null, 2)}</p>
+            </div>
+          `;
+        });
+
+        // Protected Endpoints
+        html += `<h4>🔒 Protected Endpoints (JWT Required)</h4>`;
+        Object.entries(docs.endpoints.protected).forEach(
+          ([endpoint, details]) => {
+            html += `
+            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h5 style="color: #48bb78; margin-bottom: 8px;">${endpoint}</h5>
+              <p><strong>Description:</strong> ${details.description}</p>
+              <p><strong>Headers:</strong> ${details.headers}</p>
+              ${details.body ? `<p><strong>Body:</strong> ${JSON.stringify(details.body, null, 2)}</p>` : ""}
+              <p><strong>Response:</strong> ${JSON.stringify(details.response, null, 2)}</p>
+            </div>
+          `;
+          }
+        );
+
+        // Admin Endpoints
+        html += `<h4>👑 Admin Endpoints</h4>`;
+        Object.entries(docs.endpoints.admin).forEach(([endpoint, details]) => {
+          html += `
+            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h5 style="color: #ed8936; margin-bottom: 8px;">${endpoint}</h5>
+              <p><strong>Description:</strong> ${details.description}</p>
+              <p><strong>Headers:</strong> ${details.headers}</p>
+              <p><strong>Access:</strong> ${details.access}</p>
+              ${details.body ? `<p><strong>Body:</strong> ${JSON.stringify(details.body, null, 2)}</p>` : ""}
+              <p><strong>Response:</strong> ${JSON.stringify(details.response, null, 2)}</p>
+            </div>
+          `;
+        });
+
+        // Super Admin Endpoints
+        html += `<h4>👑 Super Admin Endpoints</h4>`;
+        Object.entries(docs.endpoints.superAdmin).forEach(
+          ([endpoint, details]) => {
+            html += `
+            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h5 style="color: #e53e3e; margin-bottom: 8px;">${endpoint}</h5>
+              <p><strong>Description:</strong> ${details.description}</p>
+              <p><strong>Headers:</strong> ${details.headers}</p>
+              <p><strong>Access:</strong> ${details.access}</p>
+              <p><strong>Response:</strong> ${JSON.stringify(details.response, null, 2)}</p>
+            </div>
+          `;
+          }
+        );
+
+        // Error Responses
+        html += `<h4>❌ Error Responses</h4>`;
+        Object.entries(docs.errorResponses).forEach(([code, description]) => {
+          html += `<p><strong>${code}:</strong> ${description}</p>`;
+        });
+
+        // User Roles
+        html += `<h4>👥 User Roles</h4>`;
+        Object.entries(docs.roles).forEach(([role, description]) => {
+          html += `<p><strong>${role}:</strong> ${description}</p>`;
+        });
+
+        // Activity Actions
+        html += `<h4>📝 Activity Log Actions</h4>`;
+        html += `<p>${docs.activityActions.join(", ")}</p>`;
+
+        content.innerHTML = html;
+      }
+
+      function showChangePasswordModal() {
+        document.getElementById("changePasswordModal").style.display = "block";
+      }
+
+      function showForgotPasswordModal() {
+        document.getElementById("forgotPasswordModal").style.display = "block";
+      }
+
+      function showCreateUserModal() {
+        document.getElementById("createUserModal").style.display = "block";
+      }
+
+      function showCreateAdminModal() {
+        document.getElementById("createAdminModal").style.display = "block";
+      }
+
+      function showBanUserModal(userId) {
+        currentUserId = userId;
+        document.getElementById("banUserModal").style.display = "block";
+      }
+
+      function showGeminiKey(userId, key) {
+        alert(`Gemini API Key for user ${userId}:\n\n${key}`);
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+        // Reset forms
+        document.querySelectorAll("form").forEach((form) => form.reset());
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        if (event.target.classList.contains("modal")) {
+          event.target.style.display = "none";
+        }
+      };
+
+      // Authentication check
+      async function checkAdminAuth() {
+        const authToken = localStorage.getItem("authToken");
+
+        if (!authToken) {
+          window.location.href = "/login";
+          return;
+        }
+
+        // Decode JWT token to get user info
+        try {
+          const tokenPayload = JSON.parse(atob(authToken.split(".")[1]));
+
+          // Check if token is expired
+          if (tokenPayload.exp * 1000 < Date.now()) {
+            localStorage.removeItem("authToken");
+            window.location.href = "/login";
+            return;
+          }
+
+          // Load user data from server
+          loadUserData();
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          localStorage.removeItem("authToken");
+          window.location.href = "/login";
+        }
+      }
+
+      // Load user data from server
+      async function loadUserData() {
+        try {
+          const response = await fetch("/api/admin/users", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+
+          if (response.status === 401) {
+            localStorage.removeItem("authToken");
+            window.location.href = "/login";
+            return;
+          }
+
+          const data = await response.json();
+          if (data.success) {
+            const tokenPayload = JSON.parse(
+              atob(localStorage.getItem("authToken").split(".")[1])
+            );
+            const currentUser = data.data.find(
+              (user) => user._id === tokenPayload.userId
+            );
+
+            if (currentUser) {
+              // Check if user is admin or superadmin
+              if (!currentUser.isAdmin && !currentUser.isSuperAdmin) {
+                alert("Access denied. Admin privileges required.");
+                window.location.href = "/login";
+                return;
+              }
+
+              // Show admin-specific elements for superadmin
+              if (currentUser.isSuperAdmin) {
+                // Show admins tab
+                document.getElementById("adminsTab").style.display = "block";
+                document.getElementById("apiDocsBtn").style.display =
+                  "inline-block";
+
+                // Show create admin buttons
+                document.getElementById("createAdminBtn").style.display =
+                  "inline-block";
+                document.getElementById("createAdminBtn2").style.display =
+                  "inline-block";
+                document.getElementById("createAdminBtn3").style.display =
+                  "inline-block";
+              }
+
+              // Display user info
+              document.getElementById("userInfo").innerHTML = `
+                <strong>Logged in as:</strong> ${currentUser.name} (${currentUser.email})
+                <br><strong>Role:</strong> ${currentUser.isSuperAdmin ? "Super Admin" : "Admin"}
+              `;
+            }
+          }
+        } catch (error) {
+          console.error("Error loading user data:", error);
+          window.location.href = "/login";
+        }
+      }
+
+      // Run authentication check immediately
+      checkAdminAuth();
+
+      // Logout function
+      async function logout() {
+        try {
+          await fetch("/api/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+        } catch (error) {
+          console.error("Logout error:", error);
+        } finally {
+          localStorage.removeItem("authToken");
+          window.location.href = "/login";
+        }
+      }
+
+      // Store all users and admins for client-side filtering
+      let allUsers = [];
+      let allAdmins = [];
+      let allActivityLogs = [];
+      let currentUserId = null;
+      let currentPage = 1;
+      const logsPerPage = 20;
+
+      // Load activity logs
+      async function loadActivityLogs() {
+        try {
+          const response = await fetch(
+            `/api/admin/activity-logs?page=${currentPage}&limit=${logsPerPage}`,
+            {
+              headers: getAuthHeaders(),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            allActivityLogs = data.data;
+            renderFilteredActivityLogs();
+          } else {
+            console.error("Failed to load activity logs:", data.message);
+            document.getElementById("logsContent").innerHTML =
+              `<div class="error">Error: ${data.message}</div>`;
+          }
+        } catch (error) {
+          console.error("Error loading activity logs:", error);
+          document.getElementById("logsContent").innerHTML =
+            `<div class="error">Error loading activity logs: ${error.message}</div>`;
+        }
+      }
+
+      // Filtering logic for activity logs
+      function renderFilteredActivityLogs() {
+        const search =
+          document.getElementById("logSearchInput")?.value.toLowerCase() || "";
+        const action = document.getElementById("logActionFilter")?.value || "";
+        const status = document.getElementById("logStatusFilter")?.value || "";
+        const date = document.getElementById("logDateFilter")?.value || "";
+
+        let filtered = allActivityLogs.filter((log) => {
+          const matchesSearch =
+            log.userName?.toLowerCase().includes(search) ||
+            log.userEmail?.toLowerCase().includes(search) ||
+            log.action?.toLowerCase().includes(search) ||
+            log.note?.toLowerCase().includes(search);
+          const matchesAction = !action || log.action === action;
+          const matchesStatus = !status || log.status === status;
+          const matchesDate =
+            !date ||
+            new Date(log.timestamp).toISOString().slice(0, 10) === date;
+          return matchesSearch && matchesAction && matchesStatus && matchesDate;
+        });
+        displayActivityLogs(filtered, filtered.length);
+      }
+
+      // Enhanced displayActivityLogs with icons, color badges, and tooltips
+      function displayActivityLogs(logs, total) {
+        const logsContent = document.getElementById("logsContent");
+        const totalPages = Math.ceil(total / logsPerPage);
+        const currentUserData = JSON.parse(localStorage.getItem("userData"));
+        const isSuperAdmin = currentUserData && currentUserData.isSuperAdmin;
+        const actionIcons = {
+          LOGIN: "<span title='Login'>🔑</span>",
+          LOGOUT: "<span title='Logout'>🚪</span>",
+          REGISTER: "<span title='Register'>📝</span>",
+          CHANGE_PASSWORD: "<span title='Change Password'>🔒</span>",
+          BAN_USER: "<span title='Ban User'>🚫</span>",
+          UNBAN_USER: "<span title='Unban User'>✅</span>",
+          RESET_PASSWORD: "<span title='Reset Password'>🔑</span>",
+          UPDATE_GEMINI_KEY: "<span title='Update Gemini Key'>🔑</span>",
+          VALIDATE_GEMINI_KEY: "<span title='Validate Gemini Key'>🔍</span>",
+          REMOVE_GEMINI_KEY: "<span title='Remove Gemini Key'>❌</span>",
+          CREATE_USER: "<span title='Create User'>👤</span>",
+          CREATE_ADMIN: "<span title='Create Admin'>🛡️</span>",
+          DELETE_USER: "<span title='Delete User'>🗑️</span>",
+          DELETE_LOG: "<span title='Delete Log'>🗑️</span>",
+          DELETE_ALL_LOGS: "<span title='Delete All Logs'>🗑️</span>",
+          send_reset_url: "📧",
+          user_status_update: "⚙️",
+        };
+
+        logsContent.innerHTML = `
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Timestamp</th>
+                  <th>IP Address</th>
+                  <th>Note</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${logs
+                  .map((log) => {
+                    // Format IP address display
+                    const ipDisplay =
+                      log.ipAddress === "HIDDEN"
+                        ? '<span class="hidden-ip">Hidden</span>'
+                        : log.ipAddress || "N/A";
+                    // Action icon
+                    const icon = actionIcons[log.action] || "";
+                    // Status badge color
+                    const statusColor =
+                      log.status === "success"
+                        ? "background: #38a169; color: white;"
+                        : "background: #e53e3e; color: white;";
+                    // Tooltip for note, user agent, IP
+                    const tooltip = `User Agent: ${log.userAgent || "N/A"}\nIP: ${log.ipAddress || "N/A"}\nNote: ${log.note || "-"}`;
+                    return `
+                    <tr title="${tooltip}">
+                      <td>${log.userName || "Unknown"} <br><span style='font-size:12px;color:#888;'>(${log.userEmail || "N/A"})</span></td>
+                      <td>${icon} ${log.action.replace(/_/g, " ").toUpperCase()}</td>
+                      <td><span class="status-badge" style="${statusColor}">${log.status.toUpperCase()}</span></td>
+                      <td>${new Date(log.timestamp).toLocaleString()}</td>
+                      <td>${ipDisplay}</td>
+                      <td>${log.note || "-"}</td>
+                      <td>
+                        <div class="table-action-buttons">
+                          ${isSuperAdmin ? `<button class="btn btn-danger" onclick="deleteLog('${log.logId}')">🗑️ Delete</button>` : ""}
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+            <button class="active">Page ${currentPage} of ${totalPages}</button>
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+          </div>
+        `;
+      }
+
+      function changePage(page) {
+        if (page > 0) {
+          currentPage = page;
+          loadActivityLogs();
+        }
+      }
+
+      // Override loadUsers to store all users
+      async function loadUsers() {
+        try {
+          const response = await fetch("/api/admin/users", {
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            allUsers = data.data;
+            renderFilteredUsers();
+          } else {
+            console.error("Failed to load users:", data.message);
+            document.getElementById("usersContent").innerHTML =
+              `<div class="error">Error: ${data.message}</div>`;
+          }
+        } catch (error) {
+          console.error("Error loading users:", error);
+          document.getElementById("usersContent").innerHTML =
+            `<div class="error">Error loading users: ${error.message}</div>`;
+        }
+      }
+
+      // Override loadAdmins to store all admins
+      async function loadAdmins() {
+        try {
+          const response = await fetch("/api/admin/users", {
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Filter only admins and superadmins
+            allAdmins = data.data.filter(
+              (user) => user.isAdmin || user.isSuperAdmin
+            );
+            renderFilteredAdmins();
+          } else {
+            console.error("Failed to load admins:", data.message);
+            document.getElementById("adminsContent").innerHTML =
+              `<div class="error">Error: ${data.message}</div>`;
+          }
+        } catch (error) {
+          console.error("Error loading admins:", error);
+          document.getElementById("adminsContent").innerHTML =
+            `<div class="error">Error loading admins: ${error.message}</div>`;
+        }
+      }
+
+      // User filtering logic
+      function renderFilteredUsers() {
+        const search = document
+          .getElementById("userSearchInput")
+          .value.toLowerCase();
+        const status = document.getElementById("userStatusFilter").value;
+        const verified = document.getElementById("userVerifiedFilter").value;
+
+        let filtered = allUsers.filter((user) => {
+          // Filter out admin and superadmin accounts - show only regular users
+          if (user.isAdmin || user.isSuperAdmin) return false;
+
+          const matchesSearch =
+            user.name?.toLowerCase().includes(search) ||
+            user.email?.toLowerCase().includes(search) ||
+            user.status?.toLowerCase().includes(search);
+          const matchesStatus = !status || user.status === status;
+          const matchesVerified =
+            !verified ||
+            (verified === "verified" && user.isVerified) ||
+            (verified === "unverified" && !user.isVerified);
+
+          return matchesSearch && matchesStatus && matchesVerified;
+        });
+        displayUsers(filtered);
+      }
+
+      // Admin filtering logic
+      function renderFilteredAdmins() {
+        const search = document
+          .getElementById("adminSearchInput")
+          .value.toLowerCase();
+        const role = document.getElementById("adminRoleFilter").value;
+        const status = document.getElementById("adminStatusFilter").value;
+
+        let filtered = allAdmins.filter((user) => {
+          const matchesSearch =
+            user.name?.toLowerCase().includes(search) ||
+            user.email?.toLowerCase().includes(search) ||
+            (user.isSuperAdmin ? "superadmin" : "admin").includes(search);
+          const matchesRole =
+            !role ||
+            (role === "Admin" && !user.isSuperAdmin) ||
+            (role === "Superadmin" && user.isSuperAdmin);
+          const matchesStatus = !status || user.status === status;
+
+          return matchesSearch && matchesRole && matchesStatus;
+        });
+        displayAdmins(filtered);
+      }
+
+      // Add event listeners for user filters
+      document.addEventListener("DOMContentLoaded", function () {
+        const userSearchInput = document.getElementById("userSearchInput");
+        const userStatusFilter = document.getElementById("userStatusFilter");
+        const userVerifiedFilter =
+          document.getElementById("userVerifiedFilter");
+        const adminSearchInput = document.getElementById("adminSearchInput");
+        const adminRoleFilter = document.getElementById("adminRoleFilter");
+        const adminStatusFilter = document.getElementById("adminStatusFilter");
+        const logSearchInput = document.getElementById("logSearchInput");
+        const logActionFilter = document.getElementById("logActionFilter");
+        const logStatusFilter = document.getElementById("logStatusFilter");
+        const logDateFilter = document.getElementById("logDateFilter");
+
+        if (userSearchInput)
+          userSearchInput.addEventListener("input", renderFilteredUsers);
+        if (userStatusFilter)
+          userStatusFilter.addEventListener("change", renderFilteredUsers);
+        if (userVerifiedFilter)
+          userVerifiedFilter.addEventListener("change", renderFilteredUsers);
+        if (adminSearchInput)
+          adminSearchInput.addEventListener("input", renderFilteredAdmins);
+        if (adminRoleFilter)
+          adminRoleFilter.addEventListener("change", renderFilteredAdmins);
+        if (adminStatusFilter)
+          adminStatusFilter.addEventListener("change", renderFilteredAdmins);
+        if (logSearchInput)
+          logSearchInput.addEventListener("input", renderFilteredActivityLogs);
+        if (logActionFilter)
+          logActionFilter.addEventListener(
+            "change",
+            renderFilteredActivityLogs
+          );
+        if (logStatusFilter)
+          logStatusFilter.addEventListener(
+            "change",
+            renderFilteredActivityLogs
+          );
+        if (logDateFilter)
+          logDateFilter.addEventListener("change", renderFilteredActivityLogs);
+      });
+
+      // Enhanced displayUsers with Gemini API key column
+      function displayUsers(users) {
+        const usersContent = document.getElementById("usersContent");
+        const currentUserData = JSON.parse(localStorage.getItem("userData"));
+        const isSuperAdmin = currentUserData && currentUserData.isSuperAdmin;
+
+        // Get the filters div and table container
+        const filtersDiv = usersContent.querySelector(".user-filters");
+        const tableContainer =
+          usersContent.querySelector(".table-container") ||
+          document.createElement("div");
+        tableContainer.className = "table-container";
+
+        tableContainer.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th>Last Login</th>
+                ${isSuperAdmin ? "<th>Gemini API Key</th>" : ""}
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users
+                .map((user, index) => {
+                  // Gemini API key display (masked for super admins)
+                  const geminiKeyDisplay = isSuperAdmin
+                    ? user.geminiApiKey
+                      ? `<button class="btn btn-sm btn-info" onclick="showGeminiKey('${user._id}', '${user.geminiApiKey}')">🔑 Show Key</button>`
+                      : '<span style="color: #999;">No key set</span>'
+                    : "";
+
+                  return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>
+                      <span class="status-badge status-${user.status}">
+                        ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                      </span>
+                      ${user.banned ? '<span class="status-badge status-banned">BANNED</span>' : ""}
+                    </td>
+                    <td>${user.isVerified ? "✅" : "❌"}</td>
+                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}</td>
+                    ${isSuperAdmin ? `<td>${geminiKeyDisplay}</td>` : ""}
+                    <td>
+                      <div class="table-action-buttons">
+                        ${
+                          !user.isSuperAdmin
+                            ? `
+                          ${
+                            !user.banned
+                              ? `<button class="btn btn-danger" onclick="banUser('${user._id}')">🚫 Ban</button>`
+                              : `<button class="btn btn-success" onclick="unbanUser('${user._id}')">✅ Unban</button>`
+                          }
+                          <button class="btn btn-warning" onclick="resetUserPassword('${user._id}')">🔑 Reset</button>
+                          <button class="btn btn-info" onclick="sendPasswordResetUrl('${user._id}')">📧 Send Reset URL</button>
+                          <button class="btn btn-secondary" onclick="updateUserStatus('${user._id}', '${user.status === "active" ? "suspended" : "active"}')">
+                            ${user.status === "active" ? "⏸️ Suspend" : "▶️ Activate"}
+                          </button>
+                          ${isSuperAdmin ? `<button class="btn btn-danger" onclick="deleteAdmin('${user._id}')">🗑️ Delete</button>` : ""}
+                        `
+                            : '<span style="color: #999; font-style: italic;">No actions available</span>'
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        `;
+
+        // Replace the content while preserving filters
+        usersContent.innerHTML = "";
+        usersContent.appendChild(filtersDiv);
+        usersContent.appendChild(tableContainer);
+      }
+
+      // Enhanced displayAdmins with Gemini API key column
+      function displayAdmins(admins) {
+        const adminsContent = document.getElementById("adminsContent");
+        const currentUserData = JSON.parse(localStorage.getItem("userData"));
+        const isSuperAdmin = currentUserData && currentUserData.isSuperAdmin;
+
+        // Get the filters div and table container
+        const filtersDiv = adminsContent.querySelector(".admin-filters");
+        const tableContainer =
+          adminsContent.querySelector(".table-container") ||
+          document.createElement("div");
+        tableContainer.className = "table-container";
+
+        tableContainer.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th>Last Login</th>
+                ${isSuperAdmin ? "<th>Gemini API Key</th>" : ""}
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${admins
+                .sort((a, b) => {
+                  // Sort super admins first, then regular admins
+                  if (a.isSuperAdmin && !b.isSuperAdmin) return -1;
+                  if (!a.isSuperAdmin && b.isSuperAdmin) return 1;
+                  return 0;
+                })
+                .map((user, index) => {
+                  // Hide superadmin email from regular admins
+                  const displayEmail =
+                    user.isSuperAdmin && !isSuperAdmin
+                      ? "Super Admin"
+                      : user.email;
+                  const displayName =
+                    user.isSuperAdmin && !isSuperAdmin
+                      ? "Super Admin"
+                      : user.name;
+                  const role = user.isSuperAdmin ? "Superadmin" : "Admin";
+
+                  // Gemini API key display (masked for super admins)
+                  const geminiKeyDisplay = isSuperAdmin
+                    ? user.geminiApiKey
+                      ? `<button class="btn btn-sm btn-info" onclick="showGeminiKey('${user._id}', '${user.geminiApiKey}')">🔑 Show Key</button>`
+                      : '<span style="color: #999;">No key set</span>'
+                    : "";
+
+                  return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                      ${displayName}
+                      ${user.isSuperAdmin ? '<span class="superadmin-badge">SUPERADMIN</span>' : '<span class="admin-badge">ADMIN</span>'}
+                    </td>
+                    <td>${displayEmail}</td>
+                    <td>${role}</td>
+                    <td>
+                      <span class="status-badge status-${user.status}">
+                        ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                      </span>
+                      ${user.banned ? '<span class="status-badge status-banned">BANNED</span>' : ""}
+                    </td>
+                    <td>${user.isVerified ? "✅" : "❌"}</td>
+                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}</td>
+                    ${isSuperAdmin ? `<td>${geminiKeyDisplay}</td>` : ""}
+                    <td>
+                      <div class="table-action-buttons">
+                        ${
+                          !user.isSuperAdmin
+                            ? `
+                          ${
+                            !user.banned
+                              ? `<button class="btn btn-danger" onclick="banUser('${user._id}')">🚫 Ban</button>`
+                              : `<button class="btn btn-success" onclick="unbanUser('${user._id}')">✅ Unban</button>`
+                          }
+                          <button class="btn btn-warning" onclick="resetUserPassword('${user._id}')">🔑 Reset</button>
+                          <button class="btn btn-info" onclick="sendPasswordResetUrl('${user._id}')">📧 Send Reset URL</button>
+                          <button class="btn btn-secondary" onclick="updateUserStatus('${user._id}', '${user.status === "active" ? "suspended" : "active"}')">
+                            ${user.status === "active" ? "⏸️ Suspend" : "▶️ Activate"}
+                          </button>
+                          ${isSuperAdmin ? `<button class="btn btn-danger" onclick="deleteAdmin('${user._id}')">🗑️ Delete</button>` : ""}
+                        `
+                            : '<span style="color: #999; font-style: italic;">No actions available</span>'
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        `;
+
+        // Replace the content while preserving filters
+        adminsContent.innerHTML = "";
+        adminsContent.appendChild(filtersDiv);
+        adminsContent.appendChild(tableContainer);
+      }
+
+      // Function to show Gemini API key in a modal
+      function showGeminiKey(userId, apiKey) {
+        const currentUserData = JSON.parse(localStorage.getItem("userData"));
+        const isSuperAdmin = currentUserData && currentUserData.isSuperAdmin;
+
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.style.display = "block";
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+              <h2>🔑 Gemini API Key</h2>
+              <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+            </div>
+            <div style="padding: 20px;">
+              <p><strong>User ID:</strong> ${userId}</p>
+              <p><strong>API Key:</strong></p>
+              <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; word-break: break-all;">
+                ${apiKey}
+              </div>
+              <div style="margin-top: 15px;">
+                <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${apiKey}').then(() => alert('API key copied to clipboard!'))">
+                  📋 Copy to Clipboard
+                </button>
+                ${
+                  isSuperAdmin
+                    ? `<button class="btn btn-danger" onclick="deleteUserGeminiKey('${userId}'); this.parentElement.parentElement.parentElement.remove();">
+                  🗑️ Delete API Key
+                </button>`
+                    : ""
+                }
+                <button class="btn btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      // User management functions
+      async function banUser(userId) {
+        currentUserId = userId;
+        showBanUserModal(userId);
+      }
+
+      async function unbanUser(userId) {
+        if (confirm("Are you sure you want to unban this user?")) {
+          try {
+            const response = await fetch(`/api/admin/unban-user/${userId}`, {
+              method: "PUT",
+              headers: getAuthHeaders(),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("User unbanned successfully");
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error unbanning user:", error);
+            alert("Error unbanning user");
+          }
+        }
+      }
+
+      async function resetUserPassword(userId) {
+        const newPassword = prompt("Enter new password for user:");
+        if (newPassword && newPassword.length >= 6) {
+          try {
+            const response = await fetch(
+              `/api/admin/reset-user-password/${userId}`,
+              {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ newPassword }),
+              }
+            );
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Password reset successfully");
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error resetting password:", error);
+            alert("Error resetting password");
+          }
+        } else if (newPassword !== null) {
+          alert("Password must be at least 6 characters long");
+        }
+      }
+
+      async function sendPasswordResetUrl(userId) {
+        if (confirm("Send password reset URL to this user's email?")) {
+          try {
+            const response = await fetch(
+              `/api/admin/send-reset-url/${userId}`,
+              {
+                method: "POST",
+                headers: getAuthHeaders(),
+              }
+            );
+            const data = await response.json();
+
+            if (data.success) {
+              alert(
+                `Password reset URL sent successfully to ${data.data.userEmail}\n\nReset URL: ${data.data.resetUrl}\n\nThis link will expire in 24 hours.`
+              );
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error sending password reset URL:", error);
+            alert("Error sending password reset URL");
+          }
+        }
+      }
+
+      async function updateUserStatus(userId, newStatus) {
+        try {
+          const response = await fetch(
+            `/api/admin/update-user-status/${userId}`,
+            {
+              method: "PUT",
+              headers: getAuthHeaders(),
+              body: JSON.stringify({ status: newStatus }),
+            }
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            alert(`User status updated to ${newStatus}`);
+            loadUsers();
+            loadAdmins();
+          } else {
+            alert("Error: " + data.message);
+          }
+        } catch (error) {
+          console.error("Error updating user status:", error);
+          alert("Error updating user status");
+        }
+      }
+
+      async function deleteUser(userId) {
+        if (
+          confirm(
+            "Are you sure you want to delete this user? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch(`/api/admin/delete-user/${userId}`, {
+              method: "DELETE",
+              headers: getAuthHeaders(),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("User deleted successfully");
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting user:", error);
+            alert("Error deleting user");
+          }
+        }
+      }
+
+      async function deleteAdmin(userId) {
+        if (
+          confirm(
+            "Are you sure you want to delete this admin? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch(`/api/admin/users/${userId}`, {
+              method: "DELETE",
+              headers: getAuthHeaders(),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Admin deleted successfully");
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting admin:", error);
+            alert("Error deleting admin");
+          }
+        }
+      }
+
+      async function deleteAllLogs() {
+        if (
+          confirm(
+            "Are you sure you want to delete all activity logs? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch("/api/admin/delete-all-logs", {
+              method: "DELETE",
+              headers: getAuthHeaders(),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("All activity logs deleted successfully");
+              loadActivityLogs();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting logs:", error);
+            alert("Error deleting logs");
+          }
+        }
+      }
+
+      async function deleteLog(logId) {
+        if (confirm("Are you sure you want to delete this log?")) {
+          try {
+            const response = await fetch(`/api/admin/delete-log/${logId}`, {
+              method: "DELETE",
+              headers: getAuthHeaders(),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Log deleted successfully");
+              loadActivityLogs();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting log:", error);
+            alert("Error deleting log");
+          }
+        }
+      }
+
+      async function deleteUserGeminiKey(userId) {
+        if (
+          confirm("Are you sure you want to delete this user's Gemini API key?")
+        ) {
+          try {
+            const response = await fetch(
+              `/api/admin/delete-user-gemini-key/${userId}`,
+              {
+                method: "DELETE",
+                headers: getAuthHeaders(),
+              }
+            );
+            const data = await response.json();
+
+            if (data.success) {
+              alert("User's Gemini API key deleted successfully");
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting user's API key:", error);
+            alert("Error deleting user's API key");
+          }
+        }
+      }
+
+      // Form submissions
+      document
+        .getElementById("createUserForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            name: document.getElementById("userName").value,
+            email: document.getElementById("userEmail").value,
+            password: document.getElementById("userPassword").value,
+          };
+
+          try {
+            const response = await fetch("/api/admin/create-user", {
+              method: "POST",
+              headers: getAuthHeaders(),
+              body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert(
+                `User created successfully!\nEmail: ${data.data.credentials.email}\nPassword: ${data.data.credentials.password}`
+              );
+              closeModal("createUserModal");
+              loadUsers();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error creating user:", error);
+            alert("Error creating user");
+          }
+        });
+
+      document
+        .getElementById("createAdminForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            name: document.getElementById("adminName").value,
+            email: document.getElementById("adminEmail").value,
+            password: document.getElementById("adminPassword").value,
+          };
+
+          try {
+            const response = await fetch("/api/admin/create-admin", {
+              method: "POST",
+              headers: getAuthHeaders(),
+              body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert(
+                `Admin created successfully!\nEmail: ${data.data.credentials.email}\nPassword: ${data.data.credentials.password}`
+              );
+              closeModal("createAdminModal");
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error creating admin:", error);
+            alert("Error creating admin");
+          }
+        });
+
+      document
+        .getElementById("banUserForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            reason: document.getElementById("banReason").value,
+          };
+
+          try {
+            const response = await fetch(
+              `/api/admin/ban-user/${currentUserId}`,
+              {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(formData),
+              }
+            );
+            const data = await response.json();
+
+            if (data.success) {
+              alert("User banned successfully");
+              closeModal("banUserModal");
+              loadUsers();
+              loadAdmins();
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error banning user:", error);
+            alert("Error banning user");
+          }
+        });
+
+      document
+        .getElementById("changePasswordForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = {
+            currentPassword: document.getElementById("currentPassword").value,
+            newPassword: document.getElementById("adminNewPassword").value,
+          };
+
+          try {
+            const response = await fetch("/api/change-password", {
+              method: "POST",
+              headers: getAuthHeaders(),
+              body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Password changed successfully");
+              closeModal("changePasswordModal");
+            } else {
+              alert("Error: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error changing password:", error);
+            alert("Error changing password");
+          }
+        });
+
+      // Tab switching function
+      function showTab(tabName) {
+        // Hide all tab contents
+        const tabContents = document.querySelectorAll(".tab-content");
+        tabContents.forEach((content) => {
+          content.classList.remove("active");
+        });
+
+        // Remove active class from all tabs
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Show selected tab content
+        const selectedContent = document.getElementById(tabName);
+        if (selectedContent) {
+          selectedContent.classList.add("active");
+        }
+
+        // Add active class to selected tab
+        const selectedTab = document.querySelector(
+          `[onclick="showTab('${tabName}')"]`
+        );
+        if (selectedTab) {
+          selectedTab.classList.add("active");
+        }
+
+        // Load data for the selected tab
+        switch (tabName) {
+          case "dashboard":
+            loadDashboardStats();
+            break;
+          case "users":
+            loadUsers();
+            break;
+          case "admins":
+            loadAdmins();
+            break;
+          case "logs":
+            loadActivityLogs();
+            break;
+        }
+      }
+
+      // Load dashboard stats
+      async function loadDashboardStats() {
+        try {
+          const response = await fetch("/api/admin/dashboard", {
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.success) {
+            const stats = data.data;
+            const currentUserData = JSON.parse(
+              localStorage.getItem("userData")
+            );
+            const isSuperAdmin =
+              currentUserData && currentUserData.isSuperAdmin;
+
+            document.getElementById("totalUsers").textContent =
+              stats.totalUsers;
+            document.getElementById("activeUsers").textContent =
+              stats.verifiedUsers;
+            document.getElementById("pendingUsers").textContent =
+              stats.pendingUsers;
+            stats.bannedUsers = stats.bannedUsers || 0;
+            document.getElementById("bannedUsers").textContent =
+              stats.bannedUsers;
+            stats.totalAdmins = stats.totalAdmins || 0;
+            document.getElementById("totalAdmins").textContent =
+              stats.totalAdmins;
+            stats.recentActivity = stats.recentActivity || [];
+            document.getElementById("recentRegistrations").textContent =
+              stats.recentActivity.length;
+
+            // Show recent activity with improved UI
+            const dashboardContent =
+              document.getElementById("dashboardContent");
+            if (stats.recentActivity.length > 0) {
+              let activityHtml = `
+                <div class="recent-activity-section">
+                  <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    📊 Recent Activity
+                  </h3>
+                  <div style="max-height: 400px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 10px;">
+              `;
+
+              const actionIcons = {
+                login: "🔑",
+                logout: "🚪",
+                register: "📝",
+                change_password: "🔒",
+                ban_user: "🚫",
+                unban_user: "✅",
+                reset_password: "🔑",
+                update_gemini_key: "🔑",
+                validate_gemini_key: "🔍",
+                remove_gemini_key: "❌",
+                delete_user_gemini_key: "🗑️",
+                create_user: "👤",
+                create_admin: "🛡️",
+                delete_user: "🗑️",
+                delete_log: "🗑️",
+                delete_all_logs: "🗑️",
+                send_reset_url: "📧",
+                user_status_update: "⚙️",
+              };
+
+              const filteredActivity = isSuperAdmin
+                ? stats.recentActivity
+                : stats.recentActivity.filter((a) => !a.isSuperAdmin);
+              filteredActivity.forEach((activity) => {
+                const icon = actionIcons[activity.action] || "📋";
+                const statusColor =
+                  activity.status === "success" ? "#38a169" : "#e53e3e";
+                const statusIcon = activity.status === "success" ? "✅" : "❌";
+
+                activityHtml += `
+                  <div style="
+                    padding: 12px; 
+                    margin-bottom: 8px; 
+                    border-left: 4px solid ${statusColor}; 
+                    background: white; 
+                    border-radius: 6px; 
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    transition: transform 0.2s ease;
+                  " onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                      <span style="font-size: 18px;">${icon}</span>
+                      <strong style="color: #2d3748;">${activity.userName}</strong>
+                      <span style="color: #718096; font-size: 12px;">(${activity.userEmail})</span>
+                      <span style="color: ${statusColor}; font-size: 12px;">${statusIcon} ${activity.status}</span>
+                    </div>
+                    <div style="color: #4a5568; font-size: 13px; margin-left: 28px;">
+                      <strong>Action:</strong> ${activity.action.replace(/_/g, " ").toUpperCase()}
+                      ${activity.note ? `<br><strong>Note:</strong> ${activity.note}` : ""}
+                      <br><strong>Time:</strong> ${new Date(activity.timestamp).toLocaleString()}
+                    </div>
+                  </div>
+                `;
+              });
+              activityHtml += "</div></div>";
+              dashboardContent.innerHTML = activityHtml;
+            } else {
+              dashboardContent.innerHTML = `
+                <div class="recent-activity-section">
+                  <h3 style="margin-bottom: 15px; color: #2d3748; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                    📊 Recent Activity
+                  </h3>
+                  <div style="text-align: center; padding: 40px; color: #718096; background: #f8f9fa; border-radius: 8px;">
+                    <span style="font-size: 48px;">📭</span>
+                    <p style="margin-top: 10px; font-size: 16px;">No recent activity</p>
+                  </div>
+                </div>
+              `;
+            }
+          } else {
+            console.error("Failed to load dashboard stats:", data.message);
+            document.getElementById("dashboardContent").innerHTML =
+              `<div class="error">Error: ${data.message}</div>`;
+          }
+        } catch (error) {
+          console.error("Error loading dashboard stats:", error);
+          document.getElementById("dashboardContent").innerHTML =
+            `<div class="error">Error loading dashboard: ${error.message}</div>`;
+        }
+      }
+
+      // Load initial data
+      loadDashboardStats();
+      loadUsers();
+      loadAdmins();
+      loadActivityLogs();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - User Dashboard</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        opacity: 0.9;
+        font-size: 16px;
+      }
+
+      .content {
+        padding: 40px;
+      }
+
+      .section {
+        margin-bottom: 40px;
+        padding: 30px;
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        background: #f8fafc;
+      }
+
+      .section h2 {
+        color: #2d3748;
+        margin-bottom: 20px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      }
+
+      .btn-danger:hover {
+        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+      }
+
+      .btn-success {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+      }
+
+      .btn-success:hover {
+        box-shadow: 0 10px 30px rgba(72, 187, 120, 0.3);
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 15px;
+      }
+
+      .status-valid {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .status-invalid {
+        background: #fed7d7;
+        color: #742a2a;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .status-valid .status-dot {
+        background: #48bb78;
+      }
+
+      .status-invalid .status-dot {
+        background: #f56565;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+
+      .alert-success {
+        background: #c6f6d5;
+        color: #22543d;
+        border: 1px solid #9ae6b4;
+      }
+
+      .alert-error {
+        background: #fed7d7;
+        color: #742a2a;
+        border: 1px solid #feb2b2;
+      }
+
+      .alert-info {
+        background: #bee3f8;
+        color: #2a4365;
+        border: 1px solid #90cdf4;
+      }
+
+      .user-info {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+      }
+
+      .user-info h3 {
+        color: #2d3748;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .info-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+      }
+
+      .info-value {
+        font-size: 16px;
+        color: #2d3748;
+        font-weight: 500;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .logout-section {
+        text-align: center;
+        padding: 20px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
+
+      .api-key-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #667eea;
+        font-size: 16px;
+        display: none;
+        transition: color 0.3s ease;
+      }
+
+      .api-key-toggle:hover {
+        color: #4a5568;
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          padding: 20px;
+        }
+
+        .section {
+          padding: 20px;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .status-checking {
+        background: #e2e8f0;
+        color: #4a5568;
+      }
+
+      .status-checking .status-dot {
+        background: #a0aec0;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <p>Manage your account settings and preferences</p>
+
+        <!-- Navigation Buttons -->
+        <div
+          style="
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <button type="button" class="btn" onclick="goToHome()">
+            <i class="fas fa-home"></i> Home
+          </button>
+          <button
+            type="button"
+            class="btn"
+            onclick="goToAdmin()"
+            id="adminBtn"
+            style="display: none"
+          >
+            <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+          </button>
+          <button type="button" class="btn btn-danger" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- User Information -->
+        <div class="user-info">
+          <h3><i class="fas fa-user"></i> Account Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Name</div>
+              <div class="info-value" id="userName">Loading...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Email</div>
+              <div class="info-value" id="userEmail">Loading...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Role</div>
+              <div class="info-value" id="userRole">Loading...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Status</div>
+              <div class="info-value" id="userStatus">Loading...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Last Login</div>
+              <div class="info-value" id="userLastLogin">Loading...</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Login Count</div>
+              <div class="info-value" id="userLoginCount">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="section">
+          <h2><i class="fas fa-lock"></i> Change Password</h2>
+          <div id="passwordAlert" class="alert hidden"></div>
+          <form id="changePasswordForm">
+            <div class="form-group">
+              <label for="currentPassword">Current Password</label>
+              <input type="password" id="currentPassword" required />
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input type="password" id="newPassword" required minlength="6" />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                required
+                minlength="6"
+              />
+            </div>
+            <button type="submit" class="btn">
+              <i class="fas fa-key"></i> Change Password
+            </button>
+          </form>
+        </div>
+
+        <!-- Gemini API Key Section -->
+        <div class="section">
+          <h2><i class="fas fa-robot"></i> Gemini API Key</h2>
+          <div id="geminiAlert" class="alert hidden"></div>
+
+          <div id="geminiStatus" class="status-indicator status-invalid hidden">
+            <div class="status-dot"></div>
+            <span id="geminiStatusText">Invalid API Key</span>
+          </div>
+
+          <form id="geminiForm" onsubmit="return false;">
+            <div class="form-group">
+              <label for="geminiApiKey">Gemini API Key</label>
+              <div style="position: relative">
+                <input
+                  type="password"
+                  id="geminiApiKey"
+                  placeholder="Enter your Gemini API key"
+                  style="padding-right: 50px"
+                />
+                <button
+                  type="button"
+                  id="toggleApiKey"
+                  onclick="toggleApiKeyVisibility()"
+                  class="api-key-toggle"
+                  style="display: none"
+                >
+                  👁️
+                </button>
+              </div>
+              <small style="color: #718096; margin-top: 5px; display: block">
+                The key will be validated and saved automatically as you type.
+              </small>
+            </div>
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn btn-danger"
+                id="removeApiKeyBtn"
+                onclick="removeGeminiKey()"
+                style="display: none"
+              >
+                <i class="fas fa-trash"></i> Remove Key
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="section">
+          <h2><i class="fas fa-compass"></i> Quick Actions</h2>
+          <div class="form-group">
+            <button type="button" class="btn" onclick="goToHome()">
+              <i class="fas fa-home"></i> Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentUser = null;
+      let authToken = localStorage.getItem("authToken");
+
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!authToken) {
+          window.location.href = "/login";
+          return;
+        }
+        loadUserInfo();
+      });
+
+      async function loadUserInfo() {
+        try {
+          const response = await fetch("/api/profile", {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+          if (response.status === 401) {
+            localStorage.removeItem("authToken");
+            window.location.href = "/login";
+            return;
+          }
+          if (response.ok) {
+            const data = await response.json();
+            currentUser = data.data;
+
+            if (currentUser) {
+              displayUserInfo(currentUser);
+              showAdminButton(currentUser);
+              loadGeminiStatus();
+            }
+          } else {
+            throw new Error("Failed to load user profile");
+          }
+        } catch (error) {
+          showAlert("Error loading user information", "error");
+        }
+      }
+
+      function displayUserInfo(user) {
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("userRole").textContent = user.isSuperAdmin
+          ? "Super Admin"
+          : user.isAdmin
+            ? "Admin"
+            : "User";
+        document.getElementById("userStatus").textContent = user.banned
+          ? "Banned"
+          : user.isVerified
+            ? "Active"
+            : "Pending";
+        document.getElementById("userLastLogin").textContent = user.lastLogin
+          ? new Date(user.lastLogin).toLocaleString()
+          : "N/A";
+        document.getElementById("userLoginCount").textContent =
+          user.loginCount || "0";
+      }
+
+      function showAdminButton(user) {
+        if (user.isAdmin || user.isSuperAdmin) {
+          document.getElementById("adminBtn").style.display = "inline-flex";
+        }
+      }
+
+      async function loadGeminiStatus() {
+        if (!currentUser) return;
+
+        const apiKeyInput = document.getElementById("geminiApiKey");
+        const toggleButton = document.getElementById("toggleApiKey");
+        const removeButton = document.getElementById("removeApiKeyBtn");
+
+        if (currentUser.geminiApiKey) {
+          apiKeyInput.value = currentUser.geminiApiKey;
+          toggleButton.style.display = "block";
+          removeButton.style.display = "inline-flex";
+          await autoValidateGeminiKey();
+        } else {
+          apiKeyInput.value = "";
+          toggleButton.style.display = "none";
+          removeButton.style.display = "none";
+          updateGeminiStatus(null);
+        }
+      }
+
+      async function autoValidateGeminiKey() {
+        if (!currentUser || !currentUser.geminiApiKey) return;
+        updateGeminiStatus("checking");
+        try {
+          const response = await fetch("/api/validate-gemini-key", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ geminiApiKey: currentUser.geminiApiKey }),
+          });
+          const data = await response.json();
+          updateGeminiStatus(data.isValid);
+        } catch (error) {
+          updateGeminiStatus("error");
+        }
+      }
+
+      let debounceTimeout;
+      const geminiApiKeyInput = document.getElementById("geminiApiKey");
+      geminiApiKeyInput.addEventListener("input", () => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(handleApiKeyInput, 500);
+      });
+
+      async function handleApiKeyInput() {
+        const apiKey = geminiApiKeyInput.value;
+
+        if (!apiKey.trim()) {
+          updateGeminiStatus(null);
+          document.getElementById("removeApiKeyBtn").style.display = "none";
+          return;
+        }
+
+        updateGeminiStatus("checking");
+
+        try {
+          const response = await fetch("/api/update-gemini-key", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ geminiApiKey: apiKey }),
+          });
+
+          if (response.ok) {
+            updateGeminiStatus(true);
+            if (currentUser) currentUser.geminiApiKey = apiKey;
+            document.getElementById("removeApiKeyBtn").style.display =
+              "inline-flex";
+            document.getElementById("toggleApiKey").style.display = "block";
+          } else {
+            updateGeminiStatus(false);
+          }
+        } catch (error) {
+          updateGeminiStatus("error");
+        }
+      }
+
+      async function removeGeminiKey() {
+        if (!confirm("Are you sure you want to remove your Gemini API key?"))
+          return;
+        try {
+          const response = await fetch("/api/remove-gemini-key", {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          const data = await response.json();
+          if (response.ok) {
+            showAlert(data.message, "success", "geminiAlert");
+            if (currentUser) currentUser.geminiApiKey = null;
+            geminiApiKeyInput.value = "";
+            document.getElementById("toggleApiKey").style.display = "none";
+            document.getElementById("removeApiKeyBtn").style.display = "none";
+            updateGeminiStatus(null);
+          } else {
+            showAlert(
+              data.message || "Failed to remove API key",
+              "error",
+              "geminiAlert"
+            );
+          }
+        } catch (error) {
+          showAlert("Error removing API key", "error", "geminiAlert");
+        }
+      }
+
+      function updateGeminiStatus(state) {
+        const statusIndicator = document.getElementById("geminiStatus");
+        const statusText = document.getElementById("geminiStatusText");
+
+        if (state === null) {
+          statusIndicator.classList.add("hidden");
+          return;
+        }
+
+        statusIndicator.classList.remove("hidden");
+
+        if (state === "checking") {
+          statusIndicator.className = "status-indicator status-checking";
+          statusText.textContent = "Checking...";
+        } else if (state === true) {
+          statusIndicator.className = "status-indicator status-valid";
+          statusText.textContent = "✓ Valid & Saved";
+        } else if (state === false) {
+          statusIndicator.className = "status-indicator status-invalid";
+          statusText.textContent = "✗ Invalid Key";
+        } else {
+          // Error case
+          statusIndicator.className = "status-indicator status-invalid";
+          statusText.textContent = "Error";
+        }
+      }
+
+      function toggleApiKeyVisibility() {
+        const apiKeyInput = document.getElementById("geminiApiKey");
+        const toggleButton = document.getElementById("toggleApiKey");
+        if (apiKeyInput.type === "password") {
+          apiKeyInput.type = "text";
+          toggleButton.textContent = "🙈";
+        } else {
+          apiKeyInput.type = "password";
+          toggleButton.textContent = "👁️";
+        }
+      }
+
+      function showAlert(message, type, alertId = "passwordAlert") {
+        const alert = document.getElementById(alertId);
+        alert.textContent = message;
+        alert.className = `alert alert-${type}`;
+        alert.classList.remove("hidden");
+
+        setTimeout(() => {
+          alert.classList.add("hidden");
+        }, 5000);
+      }
+
+      function goToAdmin() {
+        window.location.href = "/admin";
+      }
+
+      function goToHome() {
+        window.location.href = "/";
+      }
+
+      async function logout() {
+        try {
+          await fetch("/api/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+        } finally {
+          localStorage.removeItem("authToken");
+          window.location.href = "/login";
+        }
+      }
+    </script>
+  </body>
+</html>
