@@ -34,6 +34,14 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Check if session token is still valid (for session termination)
+    if (!user.sessionToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
+      });
+    }
+
     req.user = user;
     next();
   } catch (error) {

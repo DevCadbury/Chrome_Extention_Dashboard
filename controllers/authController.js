@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const generateOTP = require("../utils/otpGenerator");
 const sendMail = require("../utils/mailer");
+const crypto = require("crypto");
 
 const OTP_EXPIRY_MINUTES = 10;
 
@@ -643,10 +644,16 @@ exports.login = async (req, res) => {
       await logActivity(user._id, "login", req, "failed");
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    // Update login stats
+
+    // Generate new session token
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+
+    // Update login stats and session token
     user.lastLogin = new Date();
     user.loginCount += 1;
+    user.sessionToken = sessionToken;
     await user.save();
+
     await logActivity(user._id, "login", req);
     const token = generateToken(user._id);
     res.json({
@@ -996,19 +1003,178 @@ exports.resetPasswordViaUrl = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Generate new session token to terminate all previous sessions
+    const newSessionToken = crypto.randomBytes(32).toString("hex");
+
     user.password = hashedPassword;
+    user.sessionToken = newSessionToken;
+    user.passwordChangedAt = new Date();
     user.resetPasswordToken = undefined;
     user.resetPasswordExpiry = undefined;
     await user.save();
+
+    // Send email notification about password reset
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Password Reset Successfully</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+          }
+          
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          
+          .content {
+            padding: 40px 30px;
+          }
+          
+          .success-icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+          }
+          
+          .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #48bb78;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+          }
+          
+          .info-box h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 16px;
+          }
+          
+          .info-list {
+            list-style: none;
+            padding: 0;
+          }
+          
+          .info-list li {
+            color: #4a5568;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+          }
+          
+          .info-list li:before {
+            content: "•";
+            color: #48bb78;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+          }
+          
+          .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Reset Successfully</h1>
+            <p>Your account password has been reset</p>
+          </div>
+          
+          <div class="content">
+            <div class="success-icon">✅</div>
+            
+            <h2>Hello ${user.name},</h2>
+            <p>Your account password has been successfully reset on <strong>${new Date().toLocaleString()}</strong>.</p>
+            
+            <div class="info-box">
+              <h3>🔒 Security Information</h3>
+              <ul class="info-list">
+                <li>All previous sessions have been terminated for security</li>
+                <li>You will need to log in again on all devices</li>
+                <li>Your new password is now active across all services</li>
+                <li>If you didn't reset your password, contact support immediately</li>
+              </ul>
+            </div>
+            
+            <p>For your security, we recommend:</p>
+            <ul style="color: #4a5568; margin: 20px 0;">
+              <li>Using a strong, unique password</li>
+              <li>Enabling two-factor authentication if available</li>
+              <li>Regularly reviewing your account activity</li>
+              <li>Never sharing your password with anyone</li>
+            </ul>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated security notification from your account management system.</p>
+            <p>If you have any questions, please contact your administrator.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send email notification
+    await sendMail(
+      user.email,
+      "Password Reset Successfully - Security Alert",
+      emailHtml
+    );
 
     await logActivity(
       user._id,
       "password_reset",
       req,
       "success",
-      "Password reset via URL token"
+      "Password reset via URL token. All sessions terminated."
     );
-    res.json({ message: "Password reset successfully" });
+    res.json({
+      message:
+        "Password reset successfully. All previous sessions have been terminated.",
+      sessionTerminated: true,
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
@@ -1033,11 +1199,196 @@ exports.changePassword = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Generate new session token to terminate all previous sessions
+    const newSessionToken = crypto.randomBytes(32).toString("hex");
+
+    // Update user with new password and session token
     user.password = hashedPassword;
+    user.sessionToken = newSessionToken;
+    user.passwordChangedAt = new Date();
     await user.save();
 
-    await logActivity(user._id, "password_change", req);
-    res.json({ message: "Password changed successfully" });
+    // Send email notification about password change
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Password Changed Successfully</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+          }
+          
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          
+          .content {
+            padding: 40px 30px;
+          }
+          
+          .success-icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+          }
+          
+          .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #48bb78;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+          }
+          
+          .info-box h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 16px;
+          }
+          
+          .info-list {
+            list-style: none;
+            padding: 0;
+          }
+          
+          .info-list li {
+            color: #4a5568;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+          }
+          
+          .info-list li:before {
+            content: "•";
+            color: #48bb78;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+          }
+          
+          .warning {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+          }
+          
+          .warning p {
+            color: #742a2a;
+            font-size: 14px;
+            margin: 0;
+          }
+          
+          .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Changed Successfully</h1>
+            <p>Your account password has been updated</p>
+          </div>
+          
+          <div class="content">
+            <div class="success-icon">✅</div>
+            
+            <h2>Hello ${user.name},</h2>
+            <p>Your account password has been successfully changed. This action was performed on <strong>${new Date().toLocaleString()}</strong>.</p>
+            
+            <div class="info-box">
+              <h3>🔒 Security Information</h3>
+              <ul class="info-list">
+                <li>All previous sessions have been terminated for security</li>
+                <li>You will need to log in again on all devices</li>
+                <li>If you didn't change your password, contact support immediately</li>
+                <li>Your new password is now active across all services</li>
+              </ul>
+            </div>
+            
+            <div class="warning">
+              <p>⚠️ <strong>Security Notice:</strong> If you did not initiate this password change, please contact your administrator immediately as your account may have been compromised.</p>
+            </div>
+            
+            <p>For your security, we recommend:</p>
+            <ul style="color: #4a5568; margin: 20px 0;">
+              <li>Using a strong, unique password</li>
+              <li>Enabling two-factor authentication if available</li>
+              <li>Regularly reviewing your account activity</li>
+              <li>Never sharing your password with anyone</li>
+            </ul>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated security notification from your account management system.</p>
+            <p>If you have any questions, please contact your administrator.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send email notification
+    await sendMail(
+      user.email,
+      "Password Changed Successfully - Security Alert",
+      emailHtml
+    );
+
+    await logActivity(
+      user._id,
+      "password_change",
+      req,
+      "success",
+      "Password changed and all sessions terminated"
+    );
+
+    res.json({
+      message:
+        "Password changed successfully. All previous sessions have been terminated.",
+      sessionTerminated: true,
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

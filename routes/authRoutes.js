@@ -53,6 +53,17 @@ const geminiKeyValidation = [
   body("geminiApiKey").notEmpty().withMessage("Gemini API key is required"),
 ];
 
+const resetPasswordViaUrlValidation = [
+  body("token").notEmpty().withMessage("Reset token is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+];
+
+const verifyResetTokenValidation = [
+  body("token").notEmpty().withMessage("Reset token is required"),
+];
+
 // Public routes
 router.post("/register", registerValidation, authController.register);
 router.post("/login", loginValidation, authController.login);
@@ -66,6 +77,16 @@ router.post(
   "/reset-password",
   resetPasswordValidation,
   authController.resetPassword
+);
+router.post(
+  "/verify-reset-token",
+  verifyResetTokenValidation,
+  authController.verifyResetToken
+);
+router.post(
+  "/reset-password-via-url",
+  resetPasswordViaUrlValidation,
+  authController.resetPasswordViaUrl
 );
 
 // Protected routes (require JWT authentication)

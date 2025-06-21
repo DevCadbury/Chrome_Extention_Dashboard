@@ -215,10 +215,15 @@ exports.resetUserPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    // Generate new session token to terminate all previous sessions
+    const newSessionToken = crypto.randomBytes(32).toString("hex");
+
     const user = await User.findByIdAndUpdate(
       req.params.userId,
       {
         password: hashedPassword,
+        sessionToken: newSessionToken,
+        passwordChangedAt: new Date(),
         otp: undefined,
         otpExpiry: undefined,
       },
@@ -232,17 +237,169 @@ exports.resetUserPassword = async (req, res) => {
       });
     }
 
+    // Send email notification about password reset
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Password Reset by Administrator</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+          }
+          
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          
+          .content {
+            padding: 40px 30px;
+          }
+          
+          .warning-icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 20px;
+          }
+          
+          .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #ed8936;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+          }
+          
+          .info-box h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 16px;
+          }
+          
+          .info-list {
+            list-style: none;
+            padding: 0;
+          }
+          
+          .info-list li {
+            color: #4a5568;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+          }
+          
+          .info-list li:before {
+            content: "•";
+            color: #ed8936;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+          }
+          
+          .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Reset by Administrator</h1>
+            <p>Your account password has been reset by an administrator</p>
+          </div>
+          
+          <div class="content">
+            <div class="warning-icon">⚠️</div>
+            
+            <h2>Hello ${user.name},</h2>
+            <p>Your account password has been reset by an administrator on <strong>${new Date().toLocaleString()}</strong>.</p>
+            
+            <div class="info-box">
+              <h3>🔒 Security Information</h3>
+              <ul class="info-list">
+                <li>All previous sessions have been terminated for security</li>
+                <li>You will need to log in again on all devices</li>
+                <li>Contact your administrator for your new password</li>
+                <li>Your new password is now active across all services</li>
+              </ul>
+            </div>
+            
+            <p><strong>Important:</strong> If you have any concerns about this password reset, please contact your administrator immediately.</p>
+            
+            <p>For your security, we recommend:</p>
+            <ul style="color: #4a5568; margin: 20px 0;">
+              <li>Changing your password after your first login</li>
+              <li>Using a strong, unique password</li>
+              <li>Enabling two-factor authentication if available</li>
+              <li>Regularly reviewing your account activity</li>
+            </ul>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated security notification from your account management system.</p>
+            <p>If you have any questions, please contact your administrator.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send email notification
+    await sendMail(
+      user.email,
+      "Password Reset by Administrator - Security Alert",
+      emailHtml
+    );
+
     await logActivity(
       currentUser._id,
       "password_reset",
       req,
       "success",
-      `Password reset by admin for user: ${user.email}`
+      `Password reset by admin for user: ${user.email}. All sessions terminated.`
     );
 
     res.json({
       success: true,
-      message: "User password reset successfully",
+      message:
+        "User password reset successfully. All previous sessions have been terminated.",
       data: user,
     });
   } catch (error) {

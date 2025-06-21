@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema(
     // Forgot password fields
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
+    // Session management
+    sessionToken: String,
+    passwordChangedAt: Date,
     // Activity tracking
     lastLogin: Date,
     loginCount: {
