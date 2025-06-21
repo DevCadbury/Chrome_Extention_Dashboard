@@ -1584,6 +1584,125 @@ exports.sendResetUrl = async (req, res) => {
     // Create reset URL
     const resetUrl = `${req.protocol}://${req.get("host")}/reset-password?token=${resetToken}&email=${user.email}`;
 
+    // Create email HTML content
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Password Reset Request</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+          }
+          
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+          }
+          
+          .header p {
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          
+          .content {
+            padding: 40px 30px;
+          }
+          
+          .reset-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s;
+          }
+          
+          .reset-button:hover {
+            transform: translateY(-2px);
+          }
+          
+          .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Reset Request</h1>
+            <p>An admin has requested a password reset for your account</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hello ${user.name},</h2>
+            <p>An administrator has initiated a password reset for your account. If you did not request this, please contact support immediately.</p>
+            
+            <p>To reset your password, click the button below:</p>
+            
+            <a href="${resetUrl}" class="reset-button">Reset My Password</a>
+            
+            <p><strong>Or copy this link:</strong></p>
+            <p style="word-break: break-all; color: #4f8cff;">${resetUrl}</p>
+            
+            <p><strong>Important:</strong></p>
+            <ul>
+              <li>This link will expire in 24 hours</li>
+              <li>If you didn't request this reset, please ignore this email</li>
+              <li>For security, this link can only be used once</li>
+            </ul>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated message from your account management system.</p>
+            <p>If you have any questions, please contact your administrator.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send email with reset URL
+    await sendMail(
+      user.email,
+      "Password Reset Request - Admin Initiated",
+      emailHtml
+    );
+
     // Log the activity
     await logActivity(
       currentUser._id,
@@ -1595,7 +1714,7 @@ exports.sendResetUrl = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Password reset URL sent successfully",
+      message: "Password reset URL sent successfully to user's email",
       data: {
         userEmail: user.email,
         resetUrl: resetUrl,
