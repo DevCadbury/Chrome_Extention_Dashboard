@@ -9,10 +9,12 @@ const crypto = require("crypto");
 const OTP_EXPIRY_MINUTES = 10;
 
 // Helper function to generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || "your-secret-key", {
-    expiresIn: "7d",
-  });
+const generateToken = (userId, sessionToken) => {
+  return jwt.sign(
+    { userId, sessionToken },
+    process.env.JWT_SECRET || "your-secret-key",
+    { expiresIn: "7d" }
+  );
 };
 
 // Helper function to log activity
@@ -655,7 +657,7 @@ exports.login = async (req, res) => {
     await user.save();
 
     await logActivity(user._id, "login", req);
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, sessionToken);
     res.json({
       message: "Login successful",
       user: {

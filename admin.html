@@ -1282,6 +1282,18 @@
         };
       }
 
+      // Global error handler for API calls
+      function handleApiError(response, error) {
+        if (response && response.status === 401) {
+          // Session expired or invalid token
+          localStorage.removeItem("authToken");
+          alert("Your session has expired. Please login again.");
+          window.location.href = "/login";
+          return true; // Error was handled
+        }
+        return false; // Error was not handled
+      }
+
       function showApiDocs() {
         document.getElementById("apiDocsModal").style.display = "block";
 
@@ -2454,15 +2466,23 @@
             });
             const data = await response.json();
 
-            if (data.success) {
-              alert("Password changed successfully");
+            if (response.ok && data.success) {
+              alert(
+                "Password changed successfully. All previous sessions have been terminated."
+              );
               closeModal("changePasswordModal");
+              // Clear the form
+              document.getElementById("changePasswordForm").reset();
             } else {
-              alert("Error: " + data.message);
+              if (!handleApiError(response, data)) {
+                alert("Error: " + (data.message || "Unknown error"));
+              }
             }
           } catch (error) {
             console.error("Error changing password:", error);
-            alert("Error changing password");
+            if (!handleApiError(null, error)) {
+              alert("Error changing password");
+            }
           }
         });
 
@@ -2519,6 +2539,9 @@
           });
 
           if (!response.ok) {
+            if (handleApiError(response, null)) {
+              return; // Error was handled, exit function
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
@@ -2636,8 +2659,10 @@
           }
         } catch (error) {
           console.error("Error loading dashboard stats:", error);
-          document.getElementById("dashboardContent").innerHTML =
-            `<div class="error">Error loading dashboard: ${error.message}</div>`;
+          if (!handleApiError(null, error)) {
+            document.getElementById("dashboardContent").innerHTML =
+              `<div class="error">Error loading dashboard: ${error.message}</div>`;
+          }
         }
       }
 

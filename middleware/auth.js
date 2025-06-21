@@ -42,6 +42,14 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Check if the session token in JWT matches the current session token
+    if (decoded.sessionToken !== user.sessionToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
+      });
+    }
+
     req.user = user;
     next();
   } catch (error) {
