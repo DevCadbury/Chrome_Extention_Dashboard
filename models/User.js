@@ -11,6 +11,7 @@ const activityLogSchema = new mongoose.Schema({
       "otp_verification",
       "registration",
       "password_change",
+      "name_update",
       "user_ban",
       "user_unban",
       "user_status_update",

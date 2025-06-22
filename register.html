@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OTP Auth Demo</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
       * {
         margin: 0;
@@ -400,6 +404,63 @@
       .links a:hover {
         text-decoration: underline;
       }
+
+      .email-edit-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .email-edit-container input {
+        flex: 1;
+      }
+
+      .edit-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+      }
+
+      .edit-btn:hover {
+        background: #5a67d8;
+        transform: translateY(-1px);
+      }
+
+      .button-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .btn-secondary {
+        background: #718096;
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-secondary:hover {
+        background: #4a5568;
+        transform: translateY(-2px);
+      }
+
+      .button-group button {
+        flex: 1;
+      }
     </style>
   </head>
   <body>
@@ -462,13 +523,12 @@
 
         <div class="form-group">
           <label for="verifyEmail">Email Address</label>
-          <input
-            type="email"
-            id="verifyEmail"
-            placeholder="Email"
-            required
-            readonly
-          />
+          <div class="email-edit-container">
+            <input type="email" id="verifyEmail" placeholder="Email" required />
+            <button type="button" id="editEmailBtn" class="edit-btn">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          </div>
         </div>
 
         <div class="form-group">
@@ -488,13 +548,18 @@
           </div>
         </div>
 
-        <button type="submit" id="verifyBtn">
-          <span class="btn-text">Verify OTP</span>
-          <span class="loading">
-            <div class="spinner"></div>
-            Verifying...
-          </span>
-        </button>
+        <div class="button-group">
+          <button type="button" id="goBackBtn" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Go Back
+          </button>
+          <button type="submit" id="verifyBtn">
+            <span class="btn-text">Verify OTP</span>
+            <span class="loading">
+              <div class="spinner"></div>
+              Verifying...
+            </span>
+          </button>
+        </div>
 
         <div class="resend-link">
           <a href="#" id="resendOtp">Didn't receive? Resend OTP</a>
@@ -540,7 +605,7 @@
     </div>
 
     <script>
-      const apiBase = "http://localhost:5000/api";
+      const apiBase = "/api";
       const registerForm = document.getElementById("registerForm");
       const verifyForm = document.getElementById("verifyForm");
       const loginForm = document.getElementById("loginForm");
@@ -874,6 +939,79 @@
           );
         }
       };
+
+      // Go Back Button
+      document.getElementById("goBackBtn").onclick = function () {
+        showForm(registerForm);
+        clearOTPTimer();
+        resetOTPInputs();
+        document.getElementById("verifyResponse").textContent = "";
+      };
+
+      // Edit Email Button
+      const originalEditEmailFunction = function () {
+        const emailInput = document.getElementById("verifyEmail");
+        const currentEmail = emailInput.value;
+
+        // Store current email to restore if user cancels
+        const originalEmail = currentEmail;
+
+        // Make input editable
+        emailInput.readOnly = false;
+        emailInput.focus();
+        emailInput.select();
+
+        // Change button text
+        const editBtn = document.getElementById("editEmailBtn");
+        editBtn.innerHTML = '<i class="fas fa-check"></i> Save';
+        editBtn.style.background = "#48bb78";
+
+        // Handle save functionality
+        const saveEmail = function () {
+          const newEmail = emailInput.value.trim();
+          if (newEmail && newEmail !== originalEmail) {
+            // Update the registration form email as well
+            document.getElementById("regEmail").value = newEmail;
+            // Clear OTP inputs and timer
+            resetOTPInputs();
+            clearOTPTimer();
+            // Show success message
+            showResponse(
+              document.getElementById("verifyResponse"),
+              "Email updated! Please resend OTP to the new email.",
+              true
+            );
+          }
+
+          // Reset button
+          editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
+          editBtn.style.background = "#667eea";
+          emailInput.readOnly = true;
+
+          // Remove event listeners
+          editBtn.onclick = originalEditEmailFunction;
+          emailInput.removeEventListener("blur", saveEmail);
+          emailInput.removeEventListener("keypress", handleEmailKeypress);
+        };
+
+        // Handle keypress (Enter to save, Escape to cancel)
+        const handleEmailKeypress = function (e) {
+          if (e.key === "Enter") {
+            saveEmail();
+          } else if (e.key === "Escape") {
+            emailInput.value = originalEmail;
+            saveEmail();
+          }
+        };
+
+        // Add event listeners
+        editBtn.onclick = saveEmail;
+        emailInput.addEventListener("blur", saveEmail);
+        emailInput.addEventListener("keypress", handleEmailKeypress);
+      };
+
+      document.getElementById("editEmailBtn").onclick =
+        originalEditEmailFunction;
 
       // Initialize
       showForm(registerForm);

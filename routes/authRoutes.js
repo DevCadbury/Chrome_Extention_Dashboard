@@ -98,6 +98,17 @@ router.post(
   changePasswordValidation,
   authController.changePassword
 );
+router.put(
+  "/update-name",
+  authenticateToken,
+  [
+    body("name")
+      .trim()
+      .isLength({ min: 2 })
+      .withMessage("Name must be at least 2 characters"),
+  ],
+  authController.updateName
+);
 router.post(
   "/validate-gemini-key",
   authenticateToken,

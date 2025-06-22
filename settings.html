@@ -384,6 +384,21 @@
           </div>
         </div>
 
+        <!-- Edit Name Section -->
+        <div class="section">
+          <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+          <div id="nameAlert" class="alert hidden"></div>
+          <form id="editNameForm">
+            <div class="form-group">
+              <label for="editName">Full Name</label>
+              <input type="text" id="editName" required minlength="2" />
+            </div>
+            <button type="submit" class="btn">
+              <i class="fas fa-save"></i> Update Name
+            </button>
+          </form>
+        </div>
+
         <!-- Change Password Section -->
         <div class="section">
           <h2><i class="fas fa-lock"></i> Change Password</h2>
@@ -482,7 +497,20 @@
           return;
         }
         loadUserInfo();
+        setupFormListeners();
       });
+
+      function setupFormListeners() {
+        // Edit Name Form
+        document
+          .getElementById("editNameForm")
+          .addEventListener("submit", handleEditName);
+
+        // Change Password Form
+        document
+          .getElementById("changePasswordForm")
+          .addEventListener("submit", handleChangePassword);
+      }
 
       async function loadUserInfo() {
         try {
@@ -516,6 +544,7 @@
       function displayUserInfo(user) {
         document.getElementById("userName").textContent = user.name;
         document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("editName").value = user.name;
         document.getElementById("userRole").textContent = user.isSuperAdmin
           ? "Super Admin"
           : user.isAdmin
@@ -536,6 +565,106 @@
       function showAdminButton(user) {
         if (user.isAdmin || user.isSuperAdmin) {
           document.getElementById("adminBtn").style.display = "inline-flex";
+        }
+      }
+
+      async function handleEditName(e) {
+        e.preventDefault();
+        const newName = document.getElementById("editName").value.trim();
+
+        if (newName.length < 2) {
+          showAlert(
+            "Name must be at least 2 characters long",
+            "error",
+            "nameAlert"
+          );
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/update-name", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ name: newName }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showAlert("Name updated successfully!", "success", "nameAlert");
+            if (currentUser) {
+              currentUser.name = newName;
+              document.getElementById("userName").textContent = newName;
+            }
+            document.getElementById("editNameForm").reset();
+          } else {
+            showAlert(
+              data.message || "Failed to update name",
+              "error",
+              "nameAlert"
+            );
+          }
+        } catch (error) {
+          showAlert("Error updating name", "error", "nameAlert");
+        }
+      }
+
+      async function handleChangePassword(e) {
+        e.preventDefault();
+        const currentPassword =
+          document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+          showAlert("New passwords do not match", "error", "passwordAlert");
+          return;
+        }
+
+        if (newPassword.length < 6) {
+          showAlert(
+            "New password must be at least 6 characters long",
+            "error",
+            "passwordAlert"
+          );
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/change-password", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+              currentPassword,
+              newPassword,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showAlert(
+              "Password changed successfully!",
+              "success",
+              "passwordAlert"
+            );
+            document.getElementById("changePasswordForm").reset();
+          } else {
+            showAlert(
+              data.message || "Failed to change password",
+              "error",
+              "passwordAlert"
+            );
+          }
+        } catch (error) {
+          showAlert("Error changing password", "error", "passwordAlert");
         }
       }
 

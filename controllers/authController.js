@@ -932,13 +932,39 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
   const { email, otp, newPassword } = req.body;
+
+  console.log("Reset password attempt:", {
+    email,
+    otp: otp ? "***" : "undefined",
+    newPassword: newPassword ? "***" : "undefined",
+  });
+
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
-    if (user.otp !== otp)
+    if (!user) {
+      console.log("User not found:", email);
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    console.log("User found:", {
+      email: user.email,
+      storedOtp: user.otp ? "***" : "undefined",
+      otpExpiry: user.otpExpiry,
+      currentTime: new Date(),
+    });
+
+    if (user.otp !== otp) {
+      console.log("OTP mismatch:", { provided: otp, stored: user.otp });
       return res.status(400).json({ message: "Invalid OTP" });
-    if (user.otpExpiry < new Date())
+    }
+
+    if (user.otpExpiry < new Date()) {
+      console.log("OTP expired:", {
+        otpExpiry: user.otpExpiry,
+        currentTime: new Date(),
+      });
       return res.status(400).json({ message: "OTP expired" });
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
@@ -946,9 +972,11 @@ exports.resetPassword = async (req, res) => {
     user.otpExpiry = undefined;
     await user.save();
 
+    console.log("Password reset successful for:", email);
     await logActivity(user._id, "password_reset", req);
     res.json({ message: "Password reset successfully" });
   } catch (err) {
+    console.error("Reset password error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
@@ -1578,5 +1606,37 @@ exports.removeGeminiKey = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error removing API key", error: err.message });
+  }
+};
+
+// Update user name
+exports.updateName = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { name } = req.body;
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = name.trim();
+    await user.save();
+
+    await logActivity(userId, "name_update", req, "success");
+
+    res.json({
+      success: true,
+      message: "Name updated successfully",
+      data: { name: user.name },
+    });
+  } catch (err) {
+    await logActivity(userId, "name_update", req, "failed");
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

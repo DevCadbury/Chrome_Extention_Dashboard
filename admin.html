@@ -819,6 +819,105 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
+
+      /* Search input improvements */
+      .user-filters input,
+      .admin-filters input,
+      .log-filters input {
+        transition:
+          border-color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .user-filters input:focus,
+      .admin-filters input:focus,
+      .log-filters input:focus {
+        outline: none;
+        border-color: #4f8cff;
+        box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
+      }
+
+      /* Improved search container */
+      .search-container {
+        position: relative;
+        flex: 1;
+      }
+
+      .search-container input {
+        width: 100%;
+        padding: 8px 35px 8px 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        transition: all 0.3s ease;
+      }
+
+      .search-container input:focus {
+        outline: none;
+        border-color: #4f8cff;
+        box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
+      }
+
+      .search-container button {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #999;
+        font-size: 16px;
+        padding: 2px;
+        transition: all 0.2s ease;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .search-container button:hover {
+        color: #ff4757;
+        background: rgba(255, 71, 87, 0.1);
+      }
+
+      /* Filter layout improvements */
+      .log-filters {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .log-filters .search-container {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .log-filters select,
+      .log-filters input[type="date"] {
+        min-width: 150px;
+        white-space: nowrap;
+      }
+
+      /* Responsive design for filters */
+      @media (max-width: 768px) {
+        .log-filters {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .log-filters .search-container {
+          min-width: auto;
+        }
+
+        .log-filters select,
+        .log-filters input[type="date"] {
+          min-width: auto;
+        }
+      }
     </style>
   </head>
   <body>
@@ -943,8 +1042,8 @@
           >
             👑 Create Admin
           </button>
-          <button class="btn btn-secondary" onclick="loadUsers()">
-            🔄 Refresh
+          <button class="btn btn-secondary" onclick="refreshAllData()">
+            🔄 Refresh All
           </button>
         </div>
 
@@ -958,17 +1057,16 @@
               margin-bottom: 1rem;
             "
           >
-            <input
-              id="userSearchInput"
-              type="text"
-              placeholder="Search by name, email, status..."
-              style="
-                flex: 1;
-                padding: 8px;
-                border-radius: 6px;
-                border: 1px solid #ccc;
-              "
-            />
+            <div class="search-container">
+              <input
+                id="userSearchInput"
+                type="text"
+                placeholder="Search by name, email, status..."
+              />
+              <button onclick="clearUserSearch()" title="Clear search">
+                ✕
+              </button>
+            </div>
             <select
               id="userStatusFilter"
               style="padding: 8px; border-radius: 6px"
@@ -1002,8 +1100,8 @@
           >
             👑 Create Admin
           </button>
-          <button class="btn btn-secondary" onclick="loadAdmins()">
-            🔄 Refresh
+          <button class="btn btn-secondary" onclick="refreshAllData()">
+            🔄 Refresh All
           </button>
         </div>
 
@@ -1017,17 +1115,16 @@
               margin-bottom: 1rem;
             "
           >
-            <input
-              id="adminSearchInput"
-              type="text"
-              placeholder="Search by name, email, role..."
-              style="
-                flex: 1;
-                padding: 8px;
-                border-radius: 6px;
-                border: 1px solid #ccc;
-              "
-            />
+            <div class="search-container">
+              <input
+                id="adminSearchInput"
+                type="text"
+                placeholder="Search by name, email, role..."
+              />
+              <button onclick="clearAdminSearch()" title="Clear search">
+                ✕
+              </button>
+            </div>
             <select
               id="adminRoleFilter"
               style="padding: 8px; border-radius: 6px"
@@ -1053,8 +1150,11 @@
       <!-- Logs Tab -->
       <div id="logs" class="tab-content">
         <div class="action-buttons">
-          <button class="btn btn-secondary" onclick="loadActivityLogs()">
-            🔄 Refresh Logs
+          <button class="btn btn-secondary" onclick="refreshAllData()">
+            🔄 Refresh All
+          </button>
+          <button class="btn btn-warning" onclick="clearLogSearch()">
+            🧹 Clear Filters
           </button>
           <button class="btn btn-danger" onclick="deleteAllLogs()">
             🗑️ Delete All Logs
@@ -1069,34 +1169,35 @@
             margin-bottom: 1rem;
           "
         >
-          <input
-            id="logSearchInput"
-            type="text"
-            placeholder="Search user, action, note..."
-            style="
-              flex: 1;
-              padding: 8px;
-              border-radius: 6px;
-              border: 1px solid #ccc;
-            "
-          />
+          <div class="search-container">
+            <input
+              id="logSearchInput"
+              type="text"
+              placeholder="Search user, action, note..."
+            />
+            <button onclick="clearLogSearch()" title="Clear search">✕</button>
+          </div>
           <select id="logActionFilter" style="padding: 8px; border-radius: 6px">
             <option value="">All Actions</option>
-            <option value="LOGIN">Login</option>
-            <option value="LOGOUT">Logout</option>
-            <option value="REGISTER">Register</option>
-            <option value="CHANGE_PASSWORD">Change Password</option>
-            <option value="BAN_USER">Ban User</option>
-            <option value="UNBAN_USER">Unban User</option>
-            <option value="RESET_PASSWORD">Reset Password</option>
-            <option value="UPDATE_GEMINI_KEY">Update Gemini Key</option>
-            <option value="VALIDATE_GEMINI_KEY">Validate Gemini Key</option>
-            <option value="REMOVE_GEMINI_KEY">Remove Gemini Key</option>
-            <option value="CREATE_USER">Create User</option>
-            <option value="CREATE_ADMIN">Create Admin</option>
-            <option value="DELETE_USER">Delete User</option>
-            <option value="DELETE_LOG">Delete Log</option>
-            <option value="DELETE_ALL_LOGS">Delete All Logs</option>
+            <option value="login">Login</option>
+            <option value="logout">Logout</option>
+            <option value="registration">Register</option>
+            <option value="password_change">Change Password</option>
+            <option value="password_reset">Reset Password</option>
+            <option value="user_ban">Ban User</option>
+            <option value="user_unban">Unban User</option>
+            <option value="user_status_update">Update User Status</option>
+            <option value="user_creation">Create User</option>
+            <option value="admin_creation">Create Admin</option>
+            <option value="admin_deletion">Delete Admin</option>
+            <option value="user_deletion">Delete User</option>
+            <option value="log_deletion">Delete Log</option>
+            <option value="logs_deletion">Delete All Logs</option>
+            <option value="gemini_key_update">Update Gemini Key</option>
+            <option value="gemini_key_validation">Validate Gemini Key</option>
+            <option value="send_reset_url">Send Reset URL</option>
+            <option value="otp_verification">OTP Verification</option>
+            <option value="name_update">Name Update</option>
           </select>
           <select id="logStatusFilter" style="padding: 8px; border-radius: 6px">
             <option value="">All Status</option>
@@ -1588,6 +1689,7 @@
 
           if (data.success) {
             allActivityLogs = data.data;
+            populateActionFilter();
             renderFilteredActivityLogs();
           } else {
             console.error("Failed to load activity logs:", data.message);
@@ -1601,27 +1703,63 @@
         }
       }
 
+      // Function to populate action filter dropdown dynamically
+      function populateActionFilter() {
+        const actionFilter = document.getElementById("logActionFilter");
+        if (!actionFilter) return;
+
+        // Get unique actions from logs
+        const uniqueActions = [
+          ...new Set(allActivityLogs.map((log) => log.action).filter(Boolean)),
+        ];
+
+        // Keep the "All Actions" option
+        actionFilter.innerHTML = '<option value="">All Actions</option>';
+
+        // Add action options
+        uniqueActions.sort().forEach((action) => {
+          const displayName = action.replace(/_/g, " ").toUpperCase();
+          actionFilter.innerHTML += `<option value="${action}">${displayName}</option>`;
+        });
+      }
+
       // Filtering logic for activity logs
       function renderFilteredActivityLogs() {
         const search =
-          document.getElementById("logSearchInput")?.value.toLowerCase() || "";
+          document
+            .getElementById("logSearchInput")
+            ?.value?.toLowerCase()
+            ?.trim() || "";
         const action = document.getElementById("logActionFilter")?.value || "";
         const status = document.getElementById("logStatusFilter")?.value || "";
         const date = document.getElementById("logDateFilter")?.value || "";
 
         let filtered = allActivityLogs.filter((log) => {
+          // Handle null/undefined values safely
+          const userName = log.userName || "";
+          const userEmail = log.userEmail || "";
+          const logAction = log.action || "";
+          const logNote = log.note || "";
+          const logStatus = log.status || "";
+          const logTimestamp = log.timestamp || "";
+
           const matchesSearch =
-            log.userName?.toLowerCase().includes(search) ||
-            log.userEmail?.toLowerCase().includes(search) ||
-            log.action?.toLowerCase().includes(search) ||
-            log.note?.toLowerCase().includes(search);
-          const matchesAction = !action || log.action === action;
-          const matchesStatus = !status || log.status === status;
+            !search ||
+            userName.toLowerCase().includes(search) ||
+            userEmail.toLowerCase().includes(search) ||
+            logAction.toLowerCase().includes(search) ||
+            logNote.toLowerCase().includes(search);
+
+          const matchesAction = !action || logAction === action;
+          const matchesStatus = !status || logStatus === status;
           const matchesDate =
             !date ||
-            new Date(log.timestamp).toISOString().slice(0, 10) === date;
+            (logTimestamp &&
+              new Date(logTimestamp).toISOString().slice(0, 10) === date);
+
           return matchesSearch && matchesAction && matchesStatus && matchesDate;
         });
+
         displayActivityLogs(filtered, filtered.length);
       }
 
@@ -1632,6 +1770,27 @@
         const currentUserData = JSON.parse(localStorage.getItem("userData"));
         const isSuperAdmin = currentUserData && currentUserData.isSuperAdmin;
         const actionIcons = {
+          // Backend action names
+          login: "<span title='Login'>🔑</span>",
+          logout: "<span title='Logout'>🚪</span>",
+          registration: "<span title='Register'>📝</span>",
+          password_change: "<span title='Change Password'>🔒</span>",
+          password_reset: "<span title='Reset Password'>🔑</span>",
+          user_ban: "<span title='Ban User'>🚫</span>",
+          user_unban: "<span title='Unban User'>✅</span>",
+          user_status_update: "<span title='Update User Status'>⚙️</span>",
+          user_creation: "<span title='Create User'>👤</span>",
+          admin_creation: "<span title='Create Admin'>🛡️</span>",
+          admin_deletion: "<span title='Delete Admin'>🗑️</span>",
+          user_deletion: "<span title='Delete User'>🗑️</span>",
+          log_deletion: "<span title='Delete Log'>🗑️</span>",
+          logs_deletion: "<span title='Delete All Logs'>🗑️</span>",
+          gemini_key_update: "<span title='Update Gemini Key'>🔑</span>",
+          gemini_key_validation: "<span title='Validate Gemini Key'>🔍</span>",
+          send_reset_url: "<span title='Send Reset URL'>📧</span>",
+          otp_verification: "<span title='OTP Verification'>📱</span>",
+          name_update: "<span title='Name Update'>✏️</span>",
+          // Legacy action names (keep for backward compatibility)
           LOGIN: "<span title='Login'>🔑</span>",
           LOGOUT: "<span title='Logout'>🚪</span>",
           REGISTER: "<span title='Register'>📝</span>",
@@ -1647,8 +1806,6 @@
           DELETE_USER: "<span title='Delete User'>🗑️</span>",
           DELETE_LOG: "<span title='Delete Log'>🗑️</span>",
           DELETE_ALL_LOGS: "<span title='Delete All Logs'>🗑️</span>",
-          send_reset_url: "📧",
-          user_status_update: "⚙️",
         };
 
         logsContent.innerHTML = `
@@ -1776,19 +1933,36 @@
         }
       }
 
+      // Debounce function for search inputs
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
       // User filtering logic
       function renderFilteredUsers() {
-        const search = document
-          .getElementById("userSearchInput")
-          .value.toLowerCase();
-        const status = document.getElementById("userStatusFilter").value;
-        const verified = document.getElementById("userVerifiedFilter").value;
+        const search =
+          document
+            .getElementById("userSearchInput")
+            ?.value?.toLowerCase()
+            ?.trim() || "";
+        const status = document.getElementById("userStatusFilter")?.value || "";
+        const verified =
+          document.getElementById("userVerifiedFilter")?.value || "";
 
         let filtered = allUsers.filter((user) => {
           // Filter out admin and superadmin accounts - show only regular users
           if (user.isAdmin || user.isSuperAdmin) return false;
 
           const matchesSearch =
+            !search ||
             user.name?.toLowerCase().includes(search) ||
             user.email?.toLowerCase().includes(search) ||
             user.status?.toLowerCase().includes(search);
@@ -1805,14 +1979,18 @@
 
       // Admin filtering logic
       function renderFilteredAdmins() {
-        const search = document
-          .getElementById("adminSearchInput")
-          .value.toLowerCase();
-        const role = document.getElementById("adminRoleFilter").value;
-        const status = document.getElementById("adminStatusFilter").value;
+        const search =
+          document
+            .getElementById("adminSearchInput")
+            ?.value?.toLowerCase()
+            ?.trim() || "";
+        const role = document.getElementById("adminRoleFilter")?.value || "";
+        const status =
+          document.getElementById("adminStatusFilter")?.value || "";
 
         let filtered = allAdmins.filter((user) => {
           const matchesSearch =
+            !search ||
             user.name?.toLowerCase().includes(search) ||
             user.email?.toLowerCase().includes(search) ||
             (user.isSuperAdmin ? "superadmin" : "admin").includes(search);
@@ -1841,20 +2019,47 @@
         const logStatusFilter = document.getElementById("logStatusFilter");
         const logDateFilter = document.getElementById("logDateFilter");
 
-        if (userSearchInput)
-          userSearchInput.addEventListener("input", renderFilteredUsers);
+        // Add debounced search for better performance
+        if (userSearchInput) {
+          userSearchInput.addEventListener(
+            "input",
+            debounce(renderFilteredUsers, 300)
+          );
+          userSearchInput.addEventListener(
+            "keyup",
+            debounce(renderFilteredUsers, 300)
+          );
+        }
         if (userStatusFilter)
           userStatusFilter.addEventListener("change", renderFilteredUsers);
         if (userVerifiedFilter)
           userVerifiedFilter.addEventListener("change", renderFilteredUsers);
-        if (adminSearchInput)
-          adminSearchInput.addEventListener("input", renderFilteredAdmins);
+
+        if (adminSearchInput) {
+          adminSearchInput.addEventListener(
+            "input",
+            debounce(renderFilteredAdmins, 300)
+          );
+          adminSearchInput.addEventListener(
+            "keyup",
+            debounce(renderFilteredAdmins, 300)
+          );
+        }
         if (adminRoleFilter)
           adminRoleFilter.addEventListener("change", renderFilteredAdmins);
         if (adminStatusFilter)
           adminStatusFilter.addEventListener("change", renderFilteredAdmins);
-        if (logSearchInput)
-          logSearchInput.addEventListener("input", renderFilteredActivityLogs);
+
+        if (logSearchInput) {
+          logSearchInput.addEventListener(
+            "input",
+            debounce(renderFilteredActivityLogs, 300)
+          );
+          logSearchInput.addEventListener(
+            "keyup",
+            debounce(renderFilteredActivityLogs, 300)
+          );
+        }
         if (logActionFilter)
           logActionFilter.addEventListener(
             "change",
@@ -2121,8 +2326,7 @@
 
             if (data.success) {
               alert("User unbanned successfully");
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2149,8 +2353,7 @@
 
             if (data.success) {
               alert("Password reset successfully");
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2179,8 +2382,7 @@
               alert(
                 `Password reset URL sent successfully to ${data.data.userEmail}\n\nReset URL: ${data.data.resetUrl}\n\nThis link will expire in 24 hours.`
               );
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2205,8 +2407,7 @@
 
           if (data.success) {
             alert(`User status updated to ${newStatus}`);
-            loadUsers();
-            loadAdmins();
+            refreshAllData();
           } else {
             alert("Error: " + data.message);
           }
@@ -2231,8 +2432,7 @@
 
             if (data.success) {
               alert("User deleted successfully");
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2250,7 +2450,7 @@
           )
         ) {
           try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const response = await fetch(`/api/admin/delete-user/${userId}`, {
               method: "DELETE",
               headers: getAuthHeaders(),
             });
@@ -2258,7 +2458,7 @@
 
             if (data.success) {
               alert("Admin deleted successfully");
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2284,7 +2484,7 @@
 
             if (data.success) {
               alert("All activity logs deleted successfully");
-              loadActivityLogs();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2306,7 +2506,7 @@
 
             if (data.success) {
               alert("Log deleted successfully");
-              loadActivityLogs();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2333,8 +2533,7 @@
 
             if (data.success) {
               alert("User's Gemini API key deleted successfully");
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2370,7 +2569,7 @@
                 `User created successfully!\nEmail: ${data.data.credentials.email}\nPassword: ${data.data.credentials.password}`
               );
               closeModal("createUserModal");
-              loadUsers();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2404,7 +2603,7 @@
                 `Admin created successfully!\nEmail: ${data.data.credentials.email}\nPassword: ${data.data.credentials.password}`
               );
               closeModal("createAdminModal");
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2437,8 +2636,7 @@
             if (data.success) {
               alert("User banned successfully");
               closeModal("banUserModal");
-              loadUsers();
-              loadAdmins();
+              refreshAllData();
             } else {
               alert("Error: " + data.message);
             }
@@ -2671,6 +2869,38 @@
       loadUsers();
       loadAdmins();
       loadActivityLogs();
+
+      // Function to refresh all data
+      async function refreshAllData() {
+        try {
+          await Promise.all([loadUsers(), loadAdmins(), loadActivityLogs()]);
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+        }
+      }
+
+      // Function to clear search filters
+      function clearUserSearch() {
+        document.getElementById("userSearchInput").value = "";
+        document.getElementById("userStatusFilter").value = "";
+        document.getElementById("userVerifiedFilter").value = "";
+        renderFilteredUsers();
+      }
+
+      function clearAdminSearch() {
+        document.getElementById("adminSearchInput").value = "";
+        document.getElementById("adminRoleFilter").value = "";
+        document.getElementById("adminStatusFilter").value = "";
+        renderFilteredAdmins();
+      }
+
+      function clearLogSearch() {
+        document.getElementById("logSearchInput").value = "";
+        document.getElementById("logActionFilter").value = "";
+        document.getElementById("logStatusFilter").value = "";
+        document.getElementById("logDateFilter").value = "";
+        renderFilteredActivityLogs();
+      }
     </script>
   </body>
 </html>

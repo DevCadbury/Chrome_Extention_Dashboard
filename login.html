@@ -635,130 +635,23 @@
         document.getElementById("forgotPasswordForm").reset();
       }
 
-      // OTP Input handling with enhanced UX
-      let resetOtpTimer;
-      let resetTimeLeft = 600; // 10 minutes in seconds
-
-      function startResetOTPTimer() {
-        resetTimeLeft = 600;
-        updateResetTimerDisplay();
-        resetOtpTimer = setInterval(() => {
-          resetTimeLeft--;
-          updateResetTimerDisplay();
-          if (resetTimeLeft <= 0) {
-            clearInterval(resetOtpTimer);
-            document.getElementById("resetOtpTimer").classList.add("expired");
-            document.getElementById("resetOtpTime").textContent = "Expired";
-          }
-        }, 1000);
-      }
-
-      function updateResetTimerDisplay() {
-        const minutes = Math.floor(resetTimeLeft / 60);
-        const seconds = resetTimeLeft % 60;
-        document.getElementById("resetOtpTime").textContent =
-          `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-      }
-
-      function resetResetOTPInputs() {
-        const resetOtpInputs = document.querySelectorAll(".otp-digit");
-        resetOtpInputs.forEach((input) => {
-          input.value = "";
-          input.classList.remove("filled", "error");
-        });
-        resetOtpInputs[0].focus();
-      }
-
-      function clearResetOTPTimer() {
-        if (resetOtpTimer) {
-          clearInterval(resetOtpTimer);
-        }
-        document.getElementById("resetOtpTimer").classList.remove("expired");
-      }
-
-      function initializeResetOTPInputs() {
-        const resetOtpInputs = document.querySelectorAll(".otp-digit");
-
-        resetOtpInputs.forEach((input, index) => {
-          input.addEventListener("input", (e) => {
-            const value = e.target.value;
-
-            // Only allow numbers
-            if (!/^\d*$/.test(value)) {
-              e.target.value = "";
-              return;
-            }
-
-            if (value.length === 1) {
-              input.classList.add("filled");
-              input.classList.remove("error");
-
-              if (index < resetOtpInputs.length - 1) {
-                resetOtpInputs[index + 1].focus();
-              }
-            } else {
-              input.classList.remove("filled");
-            }
-          });
-
-          input.addEventListener("keydown", (e) => {
-            if (e.key === "Backspace" && e.target.value === "" && index > 0) {
-              resetOtpInputs[index - 1].focus();
-              resetOtpInputs[index - 1].classList.remove("filled");
-            }
-          });
-
-          input.addEventListener("paste", (e) => {
-            e.preventDefault();
-            const pastedData = e.clipboardData
-              .getData("text")
-              .replace(/\D/g, "");
-            if (pastedData.length === 6) {
-              resetOtpInputs.forEach((input, i) => {
-                input.value = pastedData[i] || "";
-                if (pastedData[i]) {
-                  input.classList.add("filled");
-                }
-              });
-              resetOtpInputs[5].focus();
-            }
-          });
-
-          input.addEventListener("focus", () => {
-            input.select();
-          });
-        });
-      }
-
       // Reset Password Modal Functions
       function showResetPasswordModal(email) {
         document.getElementById("resetEmailDisplay").textContent = email;
         document.getElementById("resetPasswordModal").style.display = "block";
         document.getElementById("forgotPasswordModal").style.display = "none";
-
-        // Initialize OTP inputs and start timer
-        setTimeout(() => {
-          initializeResetOTPInputs();
-          startResetOTPTimer();
-          resetResetOTPInputs();
-        }, 100);
       }
 
       function closeResetPasswordModal() {
         document.getElementById("resetPasswordModal").style.display = "none";
         document.getElementById("resetPasswordForm").reset();
         document.getElementById("resetPasswordStrength").textContent = "";
-        clearResetOTPTimer();
       }
 
       // Resend OTP function
-      function resendResetOtp() {
+      async function resendResetOtp() {
         const email = document.getElementById("resetEmailDisplay").textContent;
-        sendForgotPasswordRequest(email);
-
-        // Clear existing timer and reset inputs
-        clearResetOTPTimer();
-        resetResetOTPInputs();
+        await sendForgotPasswordRequest(email);
       }
 
       // Close modal when clicking outside
@@ -811,25 +704,13 @@
         }
       }
 
-      // Forgot Password Form Submission
-      document
-        .getElementById("forgotPasswordForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          const email = document.getElementById("forgotEmail").value;
-          await sendForgotPasswordRequest(email);
-        });
-
       // Reset Password Form Submission
       document
         .getElementById("resetPasswordForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
 
-          const otp = Array.from(document.querySelectorAll(".otp-digit"))
-            .map((input) => input.value)
-            .join("");
+          const otp = document.getElementById("resetOtp").value;
           const newPassword = document.getElementById("newPassword").value;
           const confirmNewPassword =
             document.getElementById("confirmNewPassword").value;
@@ -840,13 +721,9 @@
           if (otp.length !== 6) {
             showAlert("Please enter a valid 6-digit OTP", "error");
             // Show error with visual feedback
-            document.querySelectorAll(".otp-digit").forEach((input) => {
-              input.classList.add("error");
-            });
+            document.getElementById("resetOtp").classList.add("error");
             setTimeout(() => {
-              document.querySelectorAll(".otp-digit").forEach((input) => {
-                input.classList.remove("error");
-              });
+              document.getElementById("resetOtp").classList.remove("error");
             }, 3000);
             return;
           }
@@ -955,6 +832,16 @@
         strengthDiv.className = `password-strength ${strengthClass}`;
         strengthDiv.textContent = `Password strength: ${strengthText}`;
       }
+
+      // Forgot Password Form Submission
+      document
+        .getElementById("forgotPasswordForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const email = document.getElementById("forgotEmail").value;
+          await sendForgotPasswordRequest(email);
+        });
     </script>
   </body>
 </html>
