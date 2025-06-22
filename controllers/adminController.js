@@ -547,16 +547,16 @@ exports.sendPasswordResetUrl = async (req, res) => {
       </html>
     `;
 
-    // Send email (commented out for now - you can uncomment when email is configured)
-    // await sendMail(
-    //   user.email,
-    //   "Password Reset Request - Admin Initiated",
-    //   emailHtml
-    // );
+    // Send email
+    await sendMail(
+      user.email,
+      "Password Reset Request - Admin Initiated",
+      emailHtml
+    );
 
     await logActivity(
       currentUser._id,
-      "password_reset",
+      "send_reset_url",
       req,
       "success",
       `Password reset URL sent to user: ${user.email}`

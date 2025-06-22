@@ -2379,9 +2379,8 @@
             const data = await response.json();
 
             if (data.success) {
-              alert(
-                `Password reset URL sent successfully to ${data.data.userEmail}\n\nReset URL: ${data.data.resetUrl}\n\nThis link will expire in 24 hours.`
-              );
+              // Show success modal with reset URL
+              showResetUrlModal(data.data);
               refreshAllData();
             } else {
               alert("Error: " + data.message);
@@ -2391,6 +2390,81 @@
             alert("Error sending password reset URL");
           }
         }
+      }
+
+      // Function to show reset URL modal
+      function showResetUrlModal(data) {
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.style.display = "block";
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+              <h2>✅ Password Reset URL Sent</h2>
+              <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+            </div>
+            <div style="padding: 20px;">
+              <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <p><strong>✅ Success!</strong> Password reset URL has been sent to:</p>
+                <p style="color: #0ea5e9; font-weight: 600;">${data.userEmail}</p>
+              </div>
+              
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 10px; color: #374151;">Reset URL:</h3>
+                <div style="background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 10px; word-break: break-all; font-family: monospace; font-size: 12px; color: #374151;">
+                  ${data.resetUrl}
+                </div>
+                <button 
+                  onclick="copyToClipboard('${data.resetUrl}')" 
+                  style="margin-top: 10px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                >
+                  📋 Copy URL
+                </button>
+              </div>
+              
+              <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 10px; color: #92400e;">⚠️ Important Information:</h3>
+                <ul style="color: #92400e; margin-left: 20px;">
+                  <li>This link will expire in 24 hours</li>
+                  <li>The link can only be used once</li>
+                  <li>Share this URL securely with the user</li>
+                  <li>Expires at: ${new Date(data.expiresAt).toLocaleString()}</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center;">
+                <button 
+                  onclick="this.parentElement.parentElement.parentElement.remove()" 
+                  style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600;"
+                >
+                  ✅ Got it!
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      // Function to copy text to clipboard
+      function copyToClipboard(text) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            // Show a temporary success message
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = "✅ Copied!";
+            button.style.background = "#10b981";
+            setTimeout(() => {
+              button.textContent = originalText;
+              button.style.background = "#3b82f6";
+            }, 2000);
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+            alert("Failed to copy to clipboard");
+          });
       }
 
       async function updateUserStatus(userId, newStatus) {
