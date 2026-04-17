@@ -1,15 +1,10 @@
 const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const User = require("./models/User");
+const { connectMongoDB } = require("./utils/mongoConnection");
 
-// Connect to MongoDB
-mongoose.connect(
-  process.env.MONGODB_URI || "mongodb://localhost:27017/otp-auth-demo",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+dotenv.config();
 
 const createSuperAdmin = async () => {
   try {
@@ -63,9 +58,22 @@ const createSuperAdmin = async () => {
     console.log("Password: .Chaman1");
   } catch (error) {
     console.error("❌ Error:", error);
-  } finally {
-    mongoose.connection.close();
   }
 };
 
-createSuperAdmin();
+const run = async () => {
+  try {
+    await connectMongoDB({
+      defaultUri: "mongodb://127.0.0.1:27017/otp-auth-demo",
+    });
+    await createSuperAdmin();
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error.message || error);
+  } finally {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
+  }
+};
+
+run();

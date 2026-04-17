@@ -1,10 +1,10 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoutes = require("../routes/authRoutes");
 const authController = require("../controllers/authController");
 const path = require("path");
+const { connectMongoDB } = require("../utils/mongoConnection");
 
 dotenv.config();
 
@@ -83,19 +83,17 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to MongoDB
-const mongoUri =
-  process.env.MONGO_URI || "mongodb://localhost:27017/user_auth_system";
-
-mongoose
-  .connect(mongoUri)
-  .then(async () => {
-    console.log("✅ Connected to MongoDB Atlas");
+connectMongoDB({
+  defaultUri: "mongodb://127.0.0.1:27017/user_auth_system",
+})
+  .then(async ({ hostname }) => {
+    console.log(`✅ Connected to MongoDB (${hostname})`);
 
     // Create default superadmin after MongoDB connection
     await authController.createDefaultSuperAdmin();
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
+    console.error("❌ MongoDB connection error:", err.message || err);
   });
 
 // 404 handler
